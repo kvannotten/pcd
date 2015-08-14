@@ -9,6 +9,7 @@ import (
 )
 
 type Config struct {
+	Path     string
 	Commands Commands
 	Podcasts Podcasts
 }
@@ -48,4 +49,9 @@ func InitConfiguration() *Config {
 	}
 
 	return &config
+}
+
+func (c *Config) Validate() error {
+	// TODO: validate configuration file
+	return nil
 }
