@@ -149,6 +149,7 @@ func writePodcast(podcast configuration.Podcast, reader io.Reader, filename stri
 	defer f.Close()
 
 	bar := pb.New(lengthInBytes).SetUnits(pb.U_BYTES)
+	bar.ShowSpeed = true
 	bar.Start()
 
 	mw := io.MultiWriter(f, bar)
@@ -156,6 +157,7 @@ func writePodcast(podcast configuration.Podcast, reader io.Reader, filename stri
 	if err != nil {
 		panic("Could not download file")
 	}
+	bar.Finish()
 }
 
 func writeFeed(podcast configuration.Podcast, feed PodcastFeed) {
