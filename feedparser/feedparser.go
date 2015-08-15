@@ -61,30 +61,25 @@ type Enclosure struct {
 }
 
 func Parse(podcast configuration.Podcast) {
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", podcast.Feed, nil)
+	resp, err := doRequest(podcast.Feed, podcast.Username, podcast.Password)
 	if err != nil {
-		fmt.Printf("Could not build request: %s\n", err)
+		fmt.Printf("Could not fetch feed: %s\n", err)
 		return
 	}
-
-	if len(podcast.Username) > 0 && len(podcast.Password) > 0 {
-		req.SetBasicAuth(podcast.Username, podcast.Password)
-	}
-
-	resp, err := client.Do(req)
 	defer resp.Body.Close()
-	if err != nil {
-		return
-	}
+
 	var feed PodcastFeed
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		fmt.Printf("Unable to read response: %s\n", err)
 		return
 	}
+
 	if err := xml.Unmarshal(body, &feed); err != nil {
+		fmt.Printf("Response is not a valid podcast feed: %s\n", err)
 		return
 	}
+
 	writeFeed(podcast, feed)
 }
 
@@ -92,14 +87,7 @@ func Download(podcast configuration.Podcast, number int) {
 	feed := readCachedFeed(podcast)
 	url := feed.Channel.Items[number-1].Enclosure.URL
 
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
-
-	if len(podcast.Username) > 0 && len(podcast.Password) > 0 {
-		req.SetBasicAuth(podcast.Username, podcast.Password)
-	}
-
-	resp, err := client.Do(req)
+	resp, err := doRequest(url, podcast.Username, podcast.Password)
 	if err != nil {
 		fmt.Printf("Could not download podcast: %s\n", err)
 		return
@@ -132,6 +120,21 @@ func ListEpisodes(podcast configuration.Podcast) []Item {
 	}
 
 	return items
+}
+
+func doRequest(url, username, password string) (*http.Response, error) {
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(username) > 0 && len(password) > 0 {
+		req.SetBasicAuth(username, password)
+	}
+
+	return client.Do(req)
 }
 
 func writePodcast(podcast configuration.Podcast, reader io.Reader, filename string) {
