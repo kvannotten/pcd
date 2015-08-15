@@ -70,9 +70,15 @@ func printPodcastInfo(podcast configuration.Podcast) {
 	fmt.Printf("Path: %s\n", podcast.Path)
 	items := feedparser.ListEpisodes(podcast)
 	fmt.Printf("Episodes: \n")
-	fmt.Printf("\t%-20s - %6s - %10s\n\t---------------------------------------------------\n", "Name", "Size", "Downloaded?")
-	for _, item := range items {
-		fmt.Printf("\t%-20s - %6s - %t\n", item.Title.Title, humanize.Bytes(item.Enclosure.Length), item.Downloaded)
+	fmt.Printf("\t%4s - %-25s - %6s - %10s\n\t---------------------------------------------------\n", "ID", "Name", "Size", "Downloaded?")
+	for id, item := range items {
+		var title string
+		if len(item.Title.Title) > 25 {
+			title = item.Title.Title[0:25]
+		} else {
+			title = item.Title.Title
+		}
+		fmt.Printf("\t%4d - %-25s - %6s - %t\n", id+1, title, humanize.Bytes(item.Enclosure.Length), item.Downloaded)
 	}
 	fmt.Println()
 }

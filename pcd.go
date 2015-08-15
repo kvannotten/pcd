@@ -33,7 +33,7 @@ func main() {
 		{
 			Name:    "download",
 			Aliases: []string{"d"},
-			Usage:   "Download podcast episode: `pcd download <podcast_id/name> <episode_offset>`. The <episode_offset> is the chronological number of the episode where 1 is the latest.",
+			Usage:   "Download podcast episode: `pcd download <podcast_id/name> <episode_ID>`. The <episode_ID> is the chronological number of the episode where 1 is the latest.",
 			Action:  DownloadPodcast,
 		},
 		{
@@ -45,7 +45,7 @@ func main() {
 		{
 			Name:    "list",
 			Aliases: []string{"l"},
-			Usage:   "List the episodes of a specified podcast: `pcd list <podcast_id/name>`",
+			Usage:   "List the episodes (and their episode_ID) of a specified podcast: `pcd list <podcast_id/name>`",
 			Action:  ListPodcast,
 		},
 	}
