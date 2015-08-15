@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/cheggaaa/pb"
 	"github.com/kvannotten/pcd/configuration"
 )
 
@@ -56,7 +57,7 @@ type ItemLink struct {
 type Enclosure struct {
 	XMLName xml.Name `xml:"enclosure"`
 	URL     string   `xml:"url,attr"`
-	Length  uint64   `xml:"length,attr"`
+	Length  int      `xml:"length,attr"`
 	Type    string   `xml:"type,attr"`
 }
 
@@ -97,7 +98,7 @@ func Download(podcast configuration.Podcast, number int) {
 	tokens := strings.Split(url, "/")
 	filename := tokens[len(tokens)-1]
 
-	writePodcast(podcast, resp.Body, filename)
+	writePodcast(podcast, resp.Body, filename, feed.Channel.Items[number-1].Enclosure.Length)
 }
 
 func ListEpisodes(podcast configuration.Podcast) []Item {
@@ -137,7 +138,7 @@ func doRequest(url, username, password string) (*http.Response, error) {
 	return client.Do(req)
 }
 
-func writePodcast(podcast configuration.Podcast, reader io.Reader, filename string) {
+func writePodcast(podcast configuration.Podcast, reader io.Reader, filename string, lengthInBytes int) {
 	path := filepath.Join(podcast.Path, filename)
 	fmt.Printf("Downloading podcast to %s\n", path)
 
@@ -146,7 +147,12 @@ func writePodcast(podcast configuration.Podcast, reader io.Reader, filename stri
 		panic("Could not create file")
 	}
 	defer f.Close()
-	_, err = io.Copy(f, reader)
+
+	bar := pb.New(lengthInBytes).SetUnits(pb.U_BYTES)
+	bar.Start()
+
+	mw := io.MultiWriter(f, bar)
+	_, err = io.Copy(mw, reader)
 	if err != nil {
 		panic("Could not download file")
 	}

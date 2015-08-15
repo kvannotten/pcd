@@ -78,7 +78,8 @@ func printPodcastInfo(podcast configuration.Podcast) {
 		} else {
 			title = item.Title.Title
 		}
-		fmt.Printf("\t%4d - %-25s - %6s - %t\n", id+1, title, humanize.Bytes(item.Enclosure.Length), item.Downloaded)
+		var length uint64 = uint64(item.Enclosure.Length)
+		fmt.Printf("\t%4d - %-25s - %6s - %t\n", id+1, title, humanize.Bytes(length), item.Downloaded)
 	}
 	fmt.Println()
 }
