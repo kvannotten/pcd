@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 )
 
 type PodcastFeed struct {
@@ -66,16 +67,18 @@ func Parse(podcast configuration.Podcast) {
 	if err := xml.Unmarshal(body, &feed); err != nil {
 		return
 	}
-	writeFeed(feed)
+	writeFeed(podcast, feed)
 }
 
 func Download(podcast configuration.Podcast) {
-	feed := readCachedFeed()
+	feed := readCachedFeed(podcast)
 	fmt.Println(feed)
 }
 
-func writeFeed(feed PodcastFeed) {
-	f, err := os.Create("/home/kristof/bliep")
+func writeFeed(podcast configuration.Podcast, feed PodcastFeed) {
+	err := os.MkdirAll(podcast.Path, 0700)
+	path := filepath.Join(podcast.Path, ".cache")
+	f, err := os.Create(path)
 	if err != nil {
 
 	}
@@ -87,8 +90,9 @@ func writeFeed(feed PodcastFeed) {
 	w.Flush()
 }
 
-func readCachedFeed() PodcastFeed {
-	f, err := os.Open("/home/kristof/bliep")
+func readCachedFeed(podcast configuration.Podcast) PodcastFeed {
+	path := filepath.Join(podcast.Path, ".cache")
+	f, err := os.Open(path)
 	if err != nil {
 
 	}

@@ -9,7 +9,6 @@ import (
 )
 
 type Config struct {
-	Path     string
 	Commands Commands
 	Podcasts Podcasts
 }
@@ -23,6 +22,7 @@ type Podcast struct {
 	ID       int
 	Name     string
 	Feed     string
+	Path     string
 	Username string
 	Password string
 }
