@@ -20,14 +20,14 @@ I wanted to be able to download my favorite podcasts in a simple way, and on the
   podcasts:
   - id: 1
     name: biggest_problem
-    path: /home/kristof/pods/biggest_problem
+    path: /some/path/to/biggest_problem
     feed: http://feeds.feedburner.com/TheBiggestProblemInTheUniverse
-    username:
-    password:
   - id: 2
     name: some_other
-    path: /home/kristof/pods/some_other
+    path: /your/podcast/path/to/some_other
     feed:  http://feeds.example.com/SomeOther.rss
+    username: foo
+    password: bar1234
 ```
 - You have to "sync" the feeds: `pcd s`
 - (Optionally) List the episodes of a podcast: `pcd l 1` or `pcd l biggest_problem`
