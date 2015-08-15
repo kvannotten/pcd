@@ -66,6 +66,11 @@ func SyncPodcasts(c *cli.Context) {
 }
 
 func DownloadPodcast(c *cli.Context) {
+	if len(c.Args()) < 1 {
+		fmt.Println("Please specify a podcast to download")
+		return
+	}
+
 	podcast := findPodcast(c.Args().First())
 	number := 1
 	if len(c.Args()) > 1 {
@@ -112,8 +117,9 @@ func printPodcastInfo(podcast configuration.Podcast) {
 	fmt.Printf("Path: %s\n", podcast.Path)
 	items := feedparser.ListEpisodes(podcast)
 	fmt.Printf("Episodes: \n")
+	fmt.Printf("\t%-20s - %6s - %10s\n\t---------------------------------------------------\n", "Name", "Size", "Downloaded?")
 	for _, item := range items {
-		fmt.Printf("\t%-20s - %s - Downloaded? %t\n", item.Title.Title, humanize.Bytes(item.Enclosure.Length), item.Downloaded)
+		fmt.Printf("\t%-20s - %6s - %t\n", item.Title.Title, humanize.Bytes(item.Enclosure.Length), item.Downloaded)
 	}
 	fmt.Println()
 

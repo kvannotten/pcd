@@ -61,7 +61,18 @@ type Enclosure struct {
 }
 
 func Parse(podcast configuration.Podcast) {
-	resp, err := http.Get(podcast.Feed)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", podcast.Feed, nil)
+	if err != nil {
+		fmt.Printf("Could not build request: %s\n", err)
+		return
+	}
+
+	if len(podcast.Username) > 0 && len(podcast.Password) > 0 {
+		req.SetBasicAuth(podcast.Username, podcast.Password)
+	}
+
+	resp, err := client.Do(req)
 	defer resp.Body.Close()
 	if err != nil {
 		return
@@ -81,7 +92,14 @@ func Download(podcast configuration.Podcast, number int) {
 	feed := readCachedFeed(podcast)
 	url := feed.Channel.Items[number-1].Enclosure.URL
 
-	resp, err := http.Get(url)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+
+	if len(podcast.Username) > 0 && len(podcast.Password) > 0 {
+		req.SetBasicAuth(podcast.Username, podcast.Password)
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Printf("Could not download podcast: %s\n", err)
 		return
@@ -92,15 +110,24 @@ func Download(podcast configuration.Podcast, number int) {
 	filename := tokens[len(tokens)-1]
 
 	writePodcast(podcast, resp.Body, filename)
-	feed.Channel.Items[number-1].Downloaded = true
-	writeFeed(podcast, feed)
 }
 
 func ListEpisodes(podcast configuration.Podcast) []Item {
 	items := make([]Item, 0)
 	feed := readCachedFeed(podcast)
+
 	for i := 0; i < len(feed.Channel.Items); i++ {
 		item := feed.Channel.Items[i]
+
+		tokens := strings.Split(item.Enclosure.URL, "/")
+		filename := tokens[len(tokens)-1]
+		path := filepath.Join(podcast.Path, filename)
+
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			item.Downloaded = false
+		} else {
+			item.Downloaded = true
+		}
 		items = append(items, item)
 	}
 
