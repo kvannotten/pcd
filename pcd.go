@@ -1,11 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"github.com/kvannotten/pcd/configuration"
 	"github.com/kvannotten/pcd/feedparser"
 	"os"
+	"strconv"
 
 	"github.com/codegangsta/cli"
+	"github.com/dustin/go-humanize"
 )
 
 var (
@@ -34,7 +37,7 @@ func main() {
 		{
 			Name:    "download",
 			Aliases: []string{"d"},
-			Usage:   "Download the podcast with the specified id/name",
+			Usage:   "Download podcast episode: `pcd download <podcast_id/name> <episode_offset>`. The <episode_offset> is the chronological number of the episode where 1 is the latest.",
 			Action:  DownloadPodcast,
 		},
 		{
@@ -43,21 +46,75 @@ func main() {
 			Usage:   "Play specified podcast",
 			Action:  PlayPodcast,
 		},
+		{
+			Name:    "list",
+			Aliases: []string{"l"},
+			Usage:   "List the episodes of a specified podcast: `pcd list <podcast_id/name>`",
+			Action:  ListPodcast,
+		},
 	}
 
 	app.Run(os.Args)
 }
 
 func SyncPodcasts(c *cli.Context) {
-	for i := 0; i < len(conf.Podcasts); i++ {
-		feedparser.Parse(conf.Podcasts[i])
+	for _, podcast := range conf.Podcasts {
+		fmt.Printf("Checking '%s'...", podcast.Name)
+		feedparser.Parse(podcast)
+		fmt.Printf(" Done\n")
 	}
 }
 
 func DownloadPodcast(c *cli.Context) {
-	feedparser.Download(conf.Podcasts[0])
+	podcast := findPodcast(c.Args().First())
+	number := 1
+	if len(c.Args()) > 1 {
+		var err error
+		number, err = strconv.Atoi(c.Args()[1])
+		if err != nil {
+			fmt.Printf("Cannot find podcast %s", c.Args()[1])
+			return
+		}
+	}
+	feedparser.Download(*podcast, number)
 }
 
 func PlayPodcast(c *cli.Context) {
+
+}
+
+func ListPodcast(c *cli.Context) {
+	podcastID := c.Args().First()
+	if len(podcastID) > 0 {
+		// list episodes of podcast
+		printPodcastInfo(*findPodcast(podcastID))
+	} else {
+		// list all podcasts
+		for _, podcast := range conf.Podcasts {
+			printPodcastInfo(podcast)
+		}
+	}
+}
+
+func findPodcast(searchTerm interface{}) *configuration.Podcast {
+	id, _ := strconv.Atoi(searchTerm.(string))
+	for _, podcast := range conf.Podcasts {
+		if podcast.Name == searchTerm || podcast.ID == id {
+			return &podcast
+		}
+	}
+	return &configuration.Podcast{}
+}
+
+func printPodcastInfo(podcast configuration.Podcast) {
+	fmt.Printf("Name: %s\n", podcast.Name)
+	fmt.Printf("Feed: %s\n", podcast.Feed)
+	fmt.Printf("Path: %s\n", podcast.Path)
+	items := feedparser.ListEpisodes(podcast)
+	fmt.Printf("Episodes: \n")
+	for _, item := range items {
+		fmt.Printf("\t%-20s - %s - Downloaded? %t\n", item.Title.Title, humanize.Bytes(item.Enclosure.Length), item.Downloaded)
+	}
+	fmt.Println()
 
 }

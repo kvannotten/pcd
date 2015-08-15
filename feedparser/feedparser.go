@@ -5,11 +5,14 @@ import (
 	"encoding/gob"
 	"encoding/xml"
 	"fmt"
-	"github.com/kvannotten/pcd/configuration"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
+
+	"github.com/kvannotten/pcd/configuration"
 )
 
 type PodcastFeed struct {
@@ -19,9 +22,9 @@ type PodcastFeed struct {
 
 type Channel struct {
 	XMLName     xml.Name `xml:"channel"`
+	Items       []Item   `xml:"item"`
 	Title       ChannelTitle
 	Description ChannelDescription
-	Items       []Item `xml:"item"`
 }
 
 type ChannelTitle struct {
@@ -35,10 +38,9 @@ type ChannelDescription struct {
 }
 
 type Item struct {
-	Title string
-	//Link      string   `xml:",chardata"`
-	//Guid      string   `xml:",chardata"`
-	Enclosure Enclosure
+	Title      ItemTitle
+	Enclosure  Enclosure
+	Downloaded bool
 }
 
 type ItemTitle struct {
@@ -46,10 +48,15 @@ type ItemTitle struct {
 	Title   string   `xml:",chardata"`
 }
 
+type ItemLink struct {
+	XMLName xml.Name `xml:"link"`
+	Link    string   `xml:",chardata"`
+}
+
 type Enclosure struct {
 	XMLName xml.Name `xml:"enclosure"`
-	Url     string   `xml:"url,attr"`
-	Length  int64    `xml:"length,attr"`
+	URL     string   `xml:"url,attr"`
+	Length  uint64   `xml:"length,attr"`
 	Type    string   `xml:"type,attr"`
 }
 
@@ -70,9 +77,49 @@ func Parse(podcast configuration.Podcast) {
 	writeFeed(podcast, feed)
 }
 
-func Download(podcast configuration.Podcast) {
+func Download(podcast configuration.Podcast, number int) {
 	feed := readCachedFeed(podcast)
-	fmt.Println(feed)
+	url := feed.Channel.Items[number-1].Enclosure.URL
+
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Printf("Could not download podcast: %s\n", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	tokens := strings.Split(url, "/")
+	filename := tokens[len(tokens)-1]
+
+	writePodcast(podcast, resp.Body, filename)
+	feed.Channel.Items[number-1].Downloaded = true
+	writeFeed(podcast, feed)
+}
+
+func ListEpisodes(podcast configuration.Podcast) []Item {
+	items := make([]Item, 0)
+	feed := readCachedFeed(podcast)
+	for i := 0; i < len(feed.Channel.Items); i++ {
+		item := feed.Channel.Items[i]
+		items = append(items, item)
+	}
+
+	return items
+}
+
+func writePodcast(podcast configuration.Podcast, reader io.Reader, filename string) {
+	path := filepath.Join(podcast.Path, filename)
+	fmt.Printf("Downloading podcast to %s\n", path)
+
+	f, err := os.Create(path)
+	if err != nil {
+		panic("Could not create file")
+	}
+	defer f.Close()
+	_, err = io.Copy(f, reader)
+	if err != nil {
+		panic("Could not download file")
+	}
 }
 
 func writeFeed(podcast configuration.Podcast, feed PodcastFeed) {
