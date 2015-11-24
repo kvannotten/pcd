@@ -2,20 +2,29 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"strconv"
+	"sync"
 
 	"github.com/codegangsta/cli"
 	"github.com/dustin/go-humanize"
 	"github.com/kvannotten/pcd/configuration"
 	"github.com/kvannotten/pcd/feedparser"
+	"github.com/olekukonko/tablewriter"
 )
 
 func SyncPodcasts(c *cli.Context) {
+	var wg sync.WaitGroup
 	for _, podcast := range conf.Podcasts {
-		fmt.Printf("Checking '%s'...", podcast.Name)
-		feedparser.Parse(podcast)
-		fmt.Printf(" Done\n")
+		wg.Add(1)
+		fmt.Printf("Checking '%s'...\n", podcast.Name)
+		go feedparser.Parse(podcast, &wg)
 	}
+	wg.Wait()
+
+	fmt.Printf("Done\n")
 }
 
 func DownloadPodcast(c *cli.Context) {
@@ -38,7 +47,17 @@ func DownloadPodcast(c *cli.Context) {
 }
 
 func PlayPodcast(c *cli.Context) {
+	podcastID := c.Args().First()
+	podcast := findPodcast(podcastID)
 
+	filename := feedparser.GetFileNameForPodcastAndEpisode(*podcast, 1)
+
+	out, err := exec.Command(conf.Commands.Player, filepath.Join(podcast.Path, filename)).Output()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(out)
 }
 
 func ListPodcast(c *cli.Context) {
@@ -68,18 +87,22 @@ func printPodcastInfo(podcast configuration.Podcast) {
 	fmt.Printf("Name: %s\n", podcast.Name)
 	fmt.Printf("Feed: %s\n", podcast.Feed)
 	fmt.Printf("Path: %s\n", podcast.Path)
-	items := feedparser.ListEpisodes(podcast)
 	fmt.Printf("Episodes: \n")
-	fmt.Printf("\t%4s - %-25s - %6s - %10s\n\t---------------------------------------------------\n", "ID", "Name", "Size", "Downloaded?")
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"ID", "Name", "Size", "Published Date", "Downloaded"})
+	table.SetBorder(false)
+
+	items := feedparser.ListEpisodes(podcast)
 	for id, item := range items {
-		var title string
-		if len(item.Title.Title) > 25 {
-			title = item.Title.Title[0:25]
-		} else {
-			title = item.Title.Title
-		}
 		var length uint64 = uint64(item.Enclosure.Length)
-		fmt.Printf("\t%4d - %-25s - %6s - %t\n", id+1, title, humanize.Bytes(length), item.Downloaded)
+		var downloaded string
+		if item.Downloaded {
+			downloaded = "true"
+		} else {
+			downloaded = "false"
+		}
+		table.Append([]string{fmt.Sprintf("%d", id+1), item.Title.Title, humanize.Bytes(length), item.Date.Date, downloaded})
 	}
-	fmt.Println()
+	table.Render()
 }

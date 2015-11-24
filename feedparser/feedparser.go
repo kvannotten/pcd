@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/cheggaaa/pb"
 	"github.com/kvannotten/pcd/configuration"
@@ -42,6 +43,7 @@ type Item struct {
 	Title      ItemTitle
 	Enclosure  Enclosure
 	Downloaded bool
+	Date       PodcastDate
 }
 
 type ItemTitle struct {
@@ -61,7 +63,13 @@ type Enclosure struct {
 	Type    string   `xml:"type,attr"`
 }
 
-func Parse(podcast configuration.Podcast) {
+type PodcastDate struct {
+	XMLName xml.Name `xml:"pubDate"`
+	Date    string   `xml:",chardata"`
+}
+
+func Parse(podcast configuration.Podcast, wg *sync.WaitGroup) {
+	defer wg.Done()
 	resp, err := doRequest(podcast.Feed, podcast.Username, podcast.Password)
 	if err != nil {
 		fmt.Printf("Could not fetch feed: %s\n", err)
@@ -99,6 +107,15 @@ func Download(podcast configuration.Podcast, number int) {
 	filename := tokens[len(tokens)-1]
 
 	writePodcast(podcast, resp.Body, filename, feed.Channel.Items[number-1].Enclosure.Length)
+}
+
+func GetFileNameForPodcastAndEpisode(podcast configuration.Podcast, number int) string {
+	feed := readCachedFeed(podcast)
+	url := feed.Channel.Items[number-1].Enclosure.URL
+	tokens := strings.Split(url, "/")
+	filename := tokens[len(tokens)-1]
+
+	return filename
 }
 
 func ListEpisodes(podcast configuration.Podcast) []Item {
