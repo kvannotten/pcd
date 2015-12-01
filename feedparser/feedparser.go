@@ -89,6 +89,19 @@ func Parse(podcast configuration.Podcast, wg *sync.WaitGroup) {
 		return
 	}
 
+	cachedFeed := readCachedFeed(podcast)
+	if len(cachedFeed.Channel.Items) < 1 {
+		// NOOP
+	} else if len(feed.Channel.Items) < 1 {
+		fmt.Println("This podcast has no items")
+		return
+	} else {
+		if cachedFeed.Channel.Items[0].Title == feed.Channel.Items[0].Title {
+			return
+		} else {
+			fmt.Printf("New items for podcast %s\n", feed.Channel.Title.Title)
+		}
+	}
 	writeFeed(podcast, feed)
 }
 
@@ -196,7 +209,7 @@ func readCachedFeed(podcast configuration.Podcast) PodcastFeed {
 	path := filepath.Join(podcast.Path, ".cache")
 	f, err := os.Open(path)
 	if err != nil {
-
+		return PodcastFeed{}
 	}
 	defer f.Close()
 	r := bufio.NewReader(f)
