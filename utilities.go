@@ -73,6 +73,26 @@ func ListPodcast(c *cli.Context) {
 	}
 }
 
+func GetPodcastPath(c *cli.Context) {
+	if len(c.Args()) < 1 {
+		fmt.Println("Please specify a podcast id")
+		return
+	}
+
+	podcast := findPodcast(c.Args().First())
+	number := 1
+	if len(c.Args()) > 1 {
+		var err error
+		number, err = strconv.Atoi(c.Args()[1])
+		if err != nil {
+			fmt.Printf("Cannot find podcast episode %s", c.Args()[1])
+			return
+		}
+	}
+	path := filepath.Join(podcast.Path, feedparser.GetFileNameForPodcastAndEpisode(*podcast, number))
+	fmt.Println(path)
+}
+
 func findPodcast(searchTerm interface{}) *configuration.Podcast {
 	id, _ := strconv.Atoi(searchTerm.(string))
 	for _, podcast := range conf.Podcasts {

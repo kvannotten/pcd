@@ -48,6 +48,12 @@ func main() {
 			Usage:   "List the episodes (and their episode_ID) of a specified podcast: `pcd list <podcast_id/name>`",
 			Action:  ListPodcast,
 		},
+		{
+			Name:    "get",
+			Aliases: []string{"g"},
+			Usage:   "Echo the path of the episode: `pcd get <podcast_id/name> [<episode_id>]`",
+			Action:  GetPodcastPath,
+		},
 	}
 
 	app.Run(os.Args)
