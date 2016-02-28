@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strconv"
 	"sync"
@@ -44,20 +43,6 @@ func DownloadPodcast(c *cli.Context) {
 		}
 	}
 	feedparser.Download(*podcast, number)
-}
-
-func PlayPodcast(c *cli.Context) {
-	podcastID := c.Args().First()
-	podcast := findPodcast(podcastID)
-
-	filename := feedparser.GetFileNameForPodcastAndEpisode(*podcast, 1)
-
-	out, err := exec.Command(conf.Commands.Player, filepath.Join(podcast.Path, filename)).Output()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println(out)
 }
 
 func ListPodcast(c *cli.Context) {

@@ -37,12 +37,6 @@ func main() {
 			Action:  DownloadPodcast,
 		},
 		{
-			Name:    "play",
-			Aliases: []string{"p"},
-			Usage:   "Play specified podcast",
-			Action:  PlayPodcast,
-		},
-		{
 			Name:    "list",
 			Aliases: []string{"l"},
 			Usage:   "List the episodes (and their episode_ID) of a specified podcast: `pcd list <podcast_id/name>`",
