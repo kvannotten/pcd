@@ -14,7 +14,6 @@ type Config struct {
 }
 
 type Commands struct {
-	Player   string
 	Download string
 }
 
