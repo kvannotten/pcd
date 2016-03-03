@@ -15,8 +15,6 @@ I wanted to be able to download my favorite podcasts in a simple way, and on the
 - You will need to create a configuration file under ~/.pcd that has the following options: 
 ```
   ---
-  commands:
-    player: mplayer
   podcasts:
   - id: 1
     name: biggest_problem
@@ -32,5 +30,5 @@ I wanted to be able to download my favorite podcasts in a simple way, and on the
 - You have to "sync" the feeds: `pcd s`
 - (Optionally) List the episodes of a podcast: `pcd l 1` or `pcd l biggest_problem`
 - Download the latest episode of `biggest_problem`: `pcd d 1` or `pcd d biggest_problem`
-- Play the latest episode with your favorite player by using: `pcd p 1` or `pcd p biggest_problem`
+- Play the latest episode with your favorite player by using: `pcd g 1 | xargs mplayer` or `pcd g biggest_problem | xargs mplayer`
 
