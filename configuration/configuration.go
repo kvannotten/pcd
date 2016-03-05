@@ -9,12 +9,7 @@ import (
 )
 
 type Config struct {
-	Commands Commands
 	Podcasts Podcasts
-}
-
-type Commands struct {
-	Download string
 }
 
 type Podcast struct {
