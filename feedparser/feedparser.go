@@ -72,7 +72,7 @@ func Parse(podcast configuration.Podcast, wg *sync.WaitGroup) {
 	defer wg.Done()
 	resp, err := doRequest(podcast.Feed, podcast.Username, podcast.Password)
 	if err != nil {
-		fmt.Printf("Could not fetch feed: %s\n", err)
+		fmt.Printf("Could not fetch feed: %s due to:\n %s\n", podcast.Name, err)
 		return
 	}
 	defer resp.Body.Close()
