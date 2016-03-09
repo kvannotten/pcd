@@ -35,7 +35,7 @@ func SyncPodcasts(c *cli.Context) {
 	var wg sync.WaitGroup
 	for _, podcast := range conf.Podcasts {
 		wg.Add(1)
-		fmt.Printf("Checking '%s'...\n", podcast.Name)
+		fmt.Printf("Checking '%s' [id: %d]...\n", podcast.Name, podcast.ID)
 		go feedparser.Parse(podcast, &wg)
 	}
 	wg.Wait()
@@ -106,6 +106,7 @@ func findPodcast(searchTerm interface{}) *configuration.Podcast {
 }
 
 func printPodcastInfo(podcast configuration.Podcast) {
+	fmt.Printf("ID: %d\n", podcast.ID)
 	fmt.Printf("Name: %s\n", podcast.Name)
 	fmt.Printf("Feed: %s\n", podcast.Feed)
 	fmt.Printf("Path: %s\n", podcast.Path)
