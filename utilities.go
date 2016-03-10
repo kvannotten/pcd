@@ -54,6 +54,10 @@ func DownloadPodcast(c *cli.Context) {
 	if len(c.Args()) > 1 {
 		var err error
 		number, err = strconv.Atoi(c.Args()[1])
+		if number > len(feedparser.ListEpisodes(*podcast)) {
+			fmt.Printf("There's not that many episodes")
+			return
+		}
 		if err != nil {
 			fmt.Printf("Cannot find podcast %s", c.Args()[1])
 			return
