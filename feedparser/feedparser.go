@@ -85,7 +85,7 @@ type PodcastDate struct {
 	Date    string   `xml:",chardata"`
 }
 
-func Parse(podcast configuration.Podcast, wg *sync.WaitGroup) {
+func Parse(podcast configuration.Podcast, wg *sync.WaitGroup, throttle chan int) {
 	defer wg.Done()
 	resp, err := doRequest(podcast.Feed, podcast.Username, podcast.Password)
 	if err != nil {
@@ -114,12 +114,14 @@ func Parse(podcast configuration.Podcast, wg *sync.WaitGroup) {
 		return
 	} else {
 		if cachedFeed.Channel.Items[0].Title == feed.Channel.Items[0].Title {
-			return
+			// NOOP
 		} else {
 			fmt.Printf("New items for podcast %s\n", feed.Channel.Title.Title)
 		}
 	}
+
 	writeFeed(podcast, feed)
+	<-throttle
 }
 
 func Download(podcast configuration.Podcast, number int) {

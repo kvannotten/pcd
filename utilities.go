@@ -32,11 +32,14 @@ import (
 )
 
 func SyncPodcasts(c *cli.Context) {
+	var throttle = make(chan int, 4)
 	var wg sync.WaitGroup
+
 	for _, podcast := range conf.Podcasts {
+		throttle <- 1
 		wg.Add(1)
 		fmt.Printf("Checking '%s' [id: %d]...\n", podcast.Name, podcast.ID)
-		go feedparser.Parse(podcast, &wg)
+		go feedparser.Parse(podcast, &wg, throttle)
 	}
 	wg.Wait()
 
