@@ -29,6 +29,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/cheggaaa/pb"
 	"github.com/kvannotten/pcd/configuration"
@@ -107,6 +108,8 @@ func Parse(podcast configuration.Podcast, wg *sync.WaitGroup, throttle chan int)
 	}
 
 	cachedFeed := readCachedFeed(podcast)
+	sortFeedByDate(feed)
+	sortFeedByDate(cachedFeed)
 	if len(cachedFeed.Channel.Items) < 1 {
 		// NOOP
 	} else if len(feed.Channel.Items) < 1 {
@@ -237,4 +240,19 @@ func readCachedFeed(podcast configuration.Podcast) PodcastFeed {
 	dec.Decode(&feed)
 
 	return feed
+}
+
+func sortFeedByDate(feed PodcastFeed) []Item {
+	layout := "Mon, 02 Jan 2006 15:04:05 -0700"
+	firstDate, _ := time.Parse(layout, feed.Channel.Items[0].Date.Date)
+	lastDate, _ := time.Parse(layout, feed.Channel.Items[len(feed.Channel.Items)-1].Date.Date)
+
+	if firstDate.Before(lastDate) {
+		// reverse feed
+		for i, j := 0, len(feed.Channel.Items)-1; i < j; i, j = i+1, j-1 {
+			feed.Channel.Items[i], feed.Channel.Items[j] = feed.Channel.Items[j], feed.Channel.Items[i]
+		}
+	}
+
+	return feed.Channel.Items
 }
