@@ -243,7 +243,12 @@ func readCachedFeed(podcast configuration.Podcast) PodcastFeed {
 }
 
 func sortFeedByDate(feed PodcastFeed) []Item {
-	layout := "Mon, 02 Jan 2006 15:04:05 -0700"
+	const layout string = "Mon, 02 Jan 2006 15:04:05 -0700"
+
+	if len(feed.Channel.Items) < 1 {
+		return []Item{}
+	}
+
 	firstDate, _ := time.Parse(layout, feed.Channel.Items[0].Date.Date)
 	lastDate, _ := time.Parse(layout, feed.Channel.Items[len(feed.Channel.Items)-1].Date.Date)
 
