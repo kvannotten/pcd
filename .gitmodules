@@ -1,0 +1,18 @@
+[submodule "vendor/github.com/cheggaaa/pb"]
+	path = vendor/github.com/cheggaaa/pb
+	url = https://github.com/cheggaaa/pb
+[submodule "vendor/github.com/codegangsta/cli"]
+	path = vendor/github.com/codegangsta/cli
+	url = https://github.com/codegangsta/cli
+[submodule "vendor/github.com/dustin/go-humanize"]
+	path = vendor/github.com/dustin/go-humanize
+	url = https://github.com/dustin/go-humanize
+[submodule "vendor/github.com/mattn/go-runewidth"]
+	path = vendor/github.com/mattn/go-runewidth
+	url = https://github.com/mattn/go-runewidth
+[submodule "vendor/github.com/olekukonko/tablewriter"]
+	path = vendor/github.com/olekukonko/tablewriter
+	url = https://github.com/olekukonko/tablewriter
+[submodule "vendor/gopkg.in/yaml.v2"]
+	path = vendor/gopkg.in/yaml.v2
+	url = https://gopkg.in/yaml.v2

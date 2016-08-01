@@ -31,7 +31,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-func SyncPodcasts(c *cli.Context) {
+func SyncPodcasts(c *cli.Context) error {
 	var throttle = make(chan int, 4)
 	var wg sync.WaitGroup
 
@@ -44,12 +44,13 @@ func SyncPodcasts(c *cli.Context) {
 	wg.Wait()
 
 	fmt.Printf("Done\n")
+
+	return nil
 }
 
-func DownloadPodcast(c *cli.Context) {
+func DownloadPodcast(c *cli.Context) error {
 	if len(c.Args()) < 1 {
-		fmt.Println("Please specify a podcast to download")
-		return
+		return fmt.Errorf("Please specify a podcast to download")
 	}
 
 	podcast := findPodcast(c.Args().First())
@@ -58,18 +59,19 @@ func DownloadPodcast(c *cli.Context) {
 		var err error
 		number, err = strconv.Atoi(c.Args()[1])
 		if number > len(feedparser.ListEpisodes(*podcast)) {
-			fmt.Printf("There's not that many episodes")
-			return
+			return fmt.Errorf("There's not that many episodes")
 		}
 		if err != nil {
 			fmt.Printf("Cannot find podcast %s", c.Args()[1])
-			return
+			return err
 		}
 	}
 	feedparser.Download(*podcast, number)
+
+	return nil
 }
 
-func ListPodcast(c *cli.Context) {
+func ListPodcast(c *cli.Context) error {
 	podcastID := c.Args().First()
 	if len(podcastID) > 0 {
 		// list episodes of podcast
@@ -80,12 +82,13 @@ func ListPodcast(c *cli.Context) {
 			printPodcastInfo(podcast)
 		}
 	}
+
+	return nil
 }
 
-func GetPodcastPath(c *cli.Context) {
+func GetPodcastPath(c *cli.Context) error {
 	if len(c.Args()) < 1 {
-		fmt.Println("Please specify a podcast id")
-		return
+		return fmt.Errorf("Please specify a podcast id")
 	}
 
 	podcast := findPodcast(c.Args().First())
@@ -94,12 +97,13 @@ func GetPodcastPath(c *cli.Context) {
 		var err error
 		number, err = strconv.Atoi(c.Args()[1])
 		if err != nil {
-			fmt.Printf("Cannot find podcast episode %s", c.Args()[1])
-			return
+			return fmt.Errorf("Cannot find podcast episode %s", c.Args()[1])
 		}
 	}
 	path := filepath.Join(podcast.Path, feedparser.GetFileNameForPodcastAndEpisode(*podcast, number))
 	fmt.Println(path)
+
+	return nil
 }
 
 func findPodcast(searchTerm interface{}) *configuration.Podcast {
