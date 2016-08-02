@@ -113,7 +113,7 @@ func Parse(podcast configuration.Podcast, wg *sync.WaitGroup, throttle chan int)
 	if len(cachedFeed.Channel.Items) < 1 {
 		// NOOP
 	} else if len(feed.Channel.Items) < 1 {
-		fmt.Println("This podcast has no items")
+		fmt.Printf("This podcast (%s) has no items\n", feed.Channel.Title.Title)
 		return
 	} else {
 		if cachedFeed.Channel.Items[0].Title == feed.Channel.Items[0].Title {
