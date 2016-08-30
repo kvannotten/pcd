@@ -26,7 +26,8 @@ import (
 )
 
 type Config struct {
-	Podcasts Podcasts
+	Podcasts    Podcasts
+	Concurrency int
 }
 
 type Podcast struct {
@@ -57,6 +58,10 @@ func InitConfiguration() *Config {
 	err = yaml.Unmarshal(source, &config)
 	if err != nil {
 		log.Println("Could not parse configuration file.")
+	}
+
+	if config.Concurrency > 16 || config.Concurrency < 0 {
+		config.Concurrency = 1
 	}
 
 	return &config

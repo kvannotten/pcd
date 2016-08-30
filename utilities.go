@@ -32,7 +32,7 @@ import (
 )
 
 func SyncPodcasts(c *cli.Context) error {
-	var throttle = make(chan int, 4)
+	var throttle = make(chan int, conf.Concurrency)
 	var wg sync.WaitGroup
 
 	for _, podcast := range conf.Podcasts {
