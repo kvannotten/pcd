@@ -60,7 +60,7 @@ func InitConfiguration() *Config {
 		log.Println("Could not parse configuration file.")
 	}
 
-	if config.Concurrency > 16 || config.Concurrency < 0 {
+	if config.Concurrency > 16 || config.Concurrency < 1 {
 		config.Concurrency = 1
 	}
 
