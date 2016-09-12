@@ -38,7 +38,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "pcd"
 	app.Usage = "CLI podcast client"
-	app.Version = "0.1.0"
+	app.Version = "0.4.0"
 
 	app.Commands = []cli.Command{
 		{
