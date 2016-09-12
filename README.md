@@ -15,6 +15,7 @@ I wanted to be able to download my favorite podcasts in a simple way, and on the
 - You will need to create a configuration file under ~/.pcd that has the following options: 
 ```
   ---
+  concurrency: 4
   podcasts:
   - id: 1
     name: biggest_problem
@@ -27,6 +28,7 @@ I wanted to be able to download my favorite podcasts in a simple way, and on the
     username: foo
     password: bar1234
 ```
+- The `concurrency` parameter defines how many podcast feeds you want to fetch at the same time (default = 1, max = 16)
 - You have to "sync" the feeds: `pcd s`
 - (Optionally) List the episodes of a podcast: `pcd l 1` or `pcd l biggest_problem`
 - Download the latest episode of `biggest_problem`: `pcd d 1` or `pcd d biggest_problem`
