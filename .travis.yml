@@ -3,7 +3,6 @@ matrix:
   include:
     - go: 1.x
       env: LATEST=true
-    - go: 1.10
 
 before_install:
   - go get github.com/inconshreveable/mousetrap
