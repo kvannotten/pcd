@@ -1,0 +1,12 @@
+language: go
+go:
+  - "1.10.x"
+  - master
+deploy:
+  provider: releases
+  api_key:
+    secure: "NU6ygHUsJxIvfQpEHeuCMb3Jgbl2XH3uv3F2wJWaNdXWpqW8SnD+IgGi6/GURg4tUsFBWh5GzMqY7tOmNwQ8mgAf3Rfp9uLzLKUbCYr+D0ZTXnJ7GACDlkMT4eHylD/+tCEwaR8AUMwHIihC6QwYgrYs+UALCmQdznWYKPDpWb8bMy4voL2Aju3fegcHdWCr59RmBQbECLC+1QSte6fOjvLNf/1YFCQTCn+T9UJc1TZewtWZRGvBC1bVSR40dhqTHWZ6pteHKAPdeOPvgQ0ENrG6SdbljAVf/imFdFEnK6f3TT5phILuYzpz45NTGgzSkgKSuDMhrYFd04X9JOH8xigEGW3bDB3jr5rGvFU3rSVtIXnBCXRwjEbotVJV+q1U2SBbUJCiv0tuKF1MhSEctpT0D75uvj6sMiyq/PKrPfpPytPjLaf9JULSa2sdppVRswZUjO5CjYtPWpt2bSiNHOJiDzuQCqEZedCjyBqKNXbq0Zu1XiEws4WhgVZUaqGZ8ietmbvvD5haU82S+bk2CoajNhLiVopjRWR3aK+On8jby7oev98ImecbgwKqrYeitLtPiueC5ftQAHCJcrFpbjVIigdICtzH5V1UMtAKNuYNsw2ck/yk8f2ufNuxppk7ZlhZD+6kCVkFNombVTWakJCiXgl+MdkTa3tIxt1YBso="
+  file: "pcd"
+  skip_cleanup: false
+  on:
+    tags: true

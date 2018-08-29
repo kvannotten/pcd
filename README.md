@@ -1,4 +1,4 @@
-# pcd
+# pcd [![Build Status](https://travis-ci.org/kvannotten/pcd.svg?branch=master)](https://travis-ci.org/kvannotten/pcd)
 
 ## Philosophy
 
@@ -12,10 +12,9 @@ I wanted to be able to download my favorite podcasts in a simple way, and on the
 
 ## Usage
 
-- You will need to create a configuration file under ~/.pcd that has the following options: 
+- You will need to create a configuration file under ~/.config/pcd.yml that has the following options: 
 ```
   ---
-  concurrency: 4
   podcasts:
   - id: 1
     name: biggest_problem
@@ -28,9 +27,10 @@ I wanted to be able to download my favorite podcasts in a simple way, and on the
     username: foo
     password: bar1234
 ```
-- The `concurrency` parameter defines how many podcast feeds you want to fetch at the same time (default = 1, max = 16)
-- You have to "sync" the feeds: `pcd s`
-- (Optionally) List the episodes of a podcast: `pcd l 1` or `pcd l biggest_problem`
-- Download the latest episode of `biggest_problem`: `pcd d 1` or `pcd d biggest_problem`
-- Play the latest episode with your favorite player by using: `pcd g 1 | xargs mplayer` or `pcd g biggest_problem | xargs mplayer`
+- You have to "sync" the feeds: `pcd sync`
+- (Optionally) List the episodes of a podcast: `pcd ls 1` or `pcd ls biggest_problem`
+- Download the first episode of `biggest_problem`: `pcd d 1 1` or `pcd d biggest_problem 1`
 
+## Contributions
+
+Contributions are welcome, as long as they are in line with the philosophy of keeping it simple and to the point. No features that are out of the scope of this application will be accepted.
