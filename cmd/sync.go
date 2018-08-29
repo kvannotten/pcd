@@ -10,8 +10,9 @@ import (
 
 // syncCmd represents the sync command
 var syncCmd = &cobra.Command{
-	Use:   "sync",
-	Short: "Syncs your podcasts",
+	Use:     "sync",
+	Aliases: []string{"s"},
+	Short:   "Syncs your podcasts",
 	Run: func(cmd *cobra.Command, args []string) {
 		var podcasts []pcd.Podcast
 

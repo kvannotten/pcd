@@ -1,0 +1,13 @@
+language: go
+go:
+  - "1.8"
+  - "1.10.x"
+  - master
+deploy:
+  provider: releases
+  api_key:
+    secure:
+  file: "pcd"
+  skip_cleanup: false
+  on:
+    tags: true

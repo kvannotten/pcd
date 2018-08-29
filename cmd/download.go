@@ -1,38 +1,57 @@
-// Copyright © 2018 NAME HERE <EMAIL ADDRESS>
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package cmd
 
 import (
-	"fmt"
+	"log"
+	"strconv"
 
+	"github.com/cheggaaa/pb"
 	"github.com/spf13/cobra"
 )
 
 // downloadCmd represents the download command
 var downloadCmd = &cobra.Command{
-	Use:   "download",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:     "download <podcast> <episode_id>",
+	Aliases: []string{"d"},
+	Short:   "Downloads an episode of a podcast.",
+	Long: `This command will download an episode of a podcast that you define. The episode number can
+be obtained by running 'pcd ls <podcast>' For example:
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("download called")
-	},
+pcd ls gnu_open_world
+pcd download gnu_open_world 1`,
+	Args: cobra.MinimumNArgs(2),
+	Run:  download,
+}
+
+func download(cmd *cobra.Command, args []string) {
+	podcast, err := findPodcast(args[0])
+	if err != nil {
+		log.Fatal("Could not perform search")
+	}
+	if podcast == nil {
+		log.Fatalf("Could not find podcast with search: %s", args[0])
+	}
+
+	if err := podcast.Load(); err != nil {
+		log.Fatalf("Could not load podcast: %#v", err)
+	}
+
+	episodeN, err := strconv.Atoi(args[1])
+	if err != nil {
+		log.Fatalf("Could not parse episode number %s: %#v", args[1], err)
+	}
+
+	if episodeN > len(podcast.Episodes) {
+		log.Fatalf("There's only %d episodes in this podcast.", len(podcast.Episodes))
+	}
+
+	bar := pb.New(podcast.Episodes[episodeN-1].Length).SetUnits(pb.U_BYTES)
+	bar.ShowTimeLeft = true
+	bar.ShowSpeed = true
+	bar.Start()
+	if err := podcast.Episodes[episodeN-1].Download(podcast.Path, bar); err != nil {
+		log.Fatalf("Could not download episode: %#v", err)
+	}
+	bar.Finish()
 }
 
 func init() {

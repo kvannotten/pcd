@@ -2,9 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 
+	"github.com/kvannotten/pcd"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -70,4 +73,46 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+}
+
+func findPodcast(idOrName string) (*pcd.Podcast, error) {
+	id, err := strconv.Atoi(idOrName)
+	if err != nil {
+		switch err.(type) {
+		case *strconv.NumError: // try as a name instead
+			return findByName(idOrName), nil
+		default:
+			log.Print("Could not parse podcast search argument, please use the ID or the name")
+			return nil, err
+		}
+	}
+	return findByID(id), nil
+}
+
+func findByName(name string) *pcd.Podcast {
+	return findByFunc(func(podcast *pcd.Podcast) bool {
+		return podcast.Name == name
+	})
+}
+
+func findByID(id int) *pcd.Podcast {
+	return findByFunc(func(podcast *pcd.Podcast) bool {
+		return podcast.ID == id
+	})
+}
+
+func findByFunc(fn func(podcast *pcd.Podcast) bool) *pcd.Podcast {
+	var podcasts []pcd.Podcast
+
+	if err := viper.UnmarshalKey("podcasts", &podcasts); err != nil {
+		log.Fatalf("Could not parse 'podcasts' entry in config: %v", err)
+	}
+
+	for _, podcast := range podcasts {
+		if fn(&podcast) {
+			return &podcast
+		}
+	}
+
+	return nil
 }
