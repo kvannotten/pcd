@@ -6,6 +6,8 @@ matrix:
     - go: 1.10
 
 before_install:
+  - go get github.com/inconshreveable/mousetrap
+  - go get github.com/cpuguy83/go-md2man/md2man
   - go get github.com/mitchellh/gox
 
 install:
