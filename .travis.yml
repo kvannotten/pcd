@@ -2,7 +2,9 @@ language: go
 matrix:
   include:
     - go: 1.x
-      env: LATEST=true
+      env: 
+        - LATEST=true
+        - GO111MODULE=on
 
 before_install:
   - go get github.com/inconshreveable/mousetrap
@@ -12,7 +14,6 @@ before_install:
 install:
   - # skip
 script:
-  - go get -t -v ./...
   - go test -v -race ./...
   - if [ "${LATEST}" = "true" ]; then gox -os="linux darwin windows" -arch="amd64" -ldflags "-s" -verbose ./...; fi
 
