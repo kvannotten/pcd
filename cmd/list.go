@@ -27,21 +27,30 @@ var listCmd = &cobra.Command{
 	Use:     "list <podcast_id/podcast_name>",
 	Aliases: []string{"ls"},
 	Short:   "Lists all episodes of a podcast",
-	Args:    cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		podcast, err := findPodcast(args[0])
-		if err != nil {
-			log.Fatal("Could not perform search")
-		}
-		if podcast == nil {
-			log.Fatalf("Could not find podcast with search: %s", args[0])
-		}
+		if len(args) == 1 {
+			podcast, err := findPodcast(args[0])
+			if err != nil {
+				log.Fatal("Could not perform search")
+			}
+			if podcast == nil {
+				log.Fatalf("Could not find podcast with search: %s", args[0])
+			}
 
-		if err := podcast.Load(); err != nil {
-			log.Fatalf("Could not load podcast: %#v", err)
-		}
+			if err := podcast.Load(); err != nil {
+				log.Fatalf("Could not load podcast: %#v", err)
+			}
 
-		fmt.Print(podcast)
+			fmt.Print(podcast)
+		} else if len(args) == 0 {
+			fmt.Println("List of podcasts from your configuration:")
+			for _, podcast := range findAll() {
+				if err := podcast.Load(); err != nil {
+					log.Fatalf("Could not load podcast: %#v", err)
+				}
+				fmt.Printf("\t- %-40s (%d episodes)\n", podcast.Name, len(podcast.Episodes))
+			}
+		}
 	},
 }
 

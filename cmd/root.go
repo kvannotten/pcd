@@ -89,6 +89,16 @@ func findPodcast(idOrName string) (*pcd.Podcast, error) {
 	return findByID(id), nil
 }
 
+func findAll() []pcd.Podcast {
+	var podcasts []pcd.Podcast
+
+	if err := viper.UnmarshalKey("podcasts", &podcasts); err != nil {
+		log.Fatalf("Could not parse 'podcasts' entry in config: %v", err)
+	}
+
+	return podcasts
+}
+
 func findByName(name string) *pcd.Podcast {
 	return findByFunc(func(podcast *pcd.Podcast) bool {
 		return podcast.Name == name
@@ -102,11 +112,7 @@ func findByID(id int) *pcd.Podcast {
 }
 
 func findByFunc(fn func(podcast *pcd.Podcast) bool) *pcd.Podcast {
-	var podcasts []pcd.Podcast
-
-	if err := viper.UnmarshalKey("podcasts", &podcasts); err != nil {
-		log.Fatalf("Could not parse 'podcasts' entry in config: %v", err)
-	}
+	podcasts := findAll()
 
 	for _, podcast := range podcasts {
 		if fn(&podcast) {
