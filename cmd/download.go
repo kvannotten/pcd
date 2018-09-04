@@ -44,6 +44,10 @@ func download(cmd *cobra.Command, args []string) {
 		log.Fatalf("There's only %d episodes in this podcast.", len(podcast.Episodes))
 	}
 
+	if episodeN < 1 {
+		log.Fatalf("A number from 1 to %d is required.", len(podcast.Episodes))
+	}
+
 	bar := pb.New(podcast.Episodes[episodeN-1].Length).SetUnits(pb.U_BYTES)
 	bar.ShowTimeLeft = true
 	bar.ShowSpeed = true
