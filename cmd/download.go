@@ -18,7 +18,7 @@ be obtained by running 'pcd ls <podcast>' For example:
 
 pcd ls gnu_open_world
 pcd download gnu_open_world 1`,
-	Args: cobra.MinimumNArgs(2),
+	Args: cobra.MinimumNArgs(1),
 	Run:  download,
 }
 
@@ -35,7 +35,12 @@ func download(cmd *cobra.Command, args []string) {
 		log.Fatalf("Could not load podcast: %#v", err)
 	}
 
-	episodeN, err := strconv.Atoi(args[1])
+	var episodeN int
+	if len(args) > 1 {
+		episodeN, err = strconv.Atoi(args[1])
+	} else {
+		episodeN = len(podcast.Episodes) // download latest
+	}
 	if err != nil {
 		log.Fatalf("Could not parse episode number %s: %#v", args[1], err)
 	}
@@ -48,13 +53,18 @@ func download(cmd *cobra.Command, args []string) {
 		log.Fatalf("A number from 1 to %d is required.", len(podcast.Episodes))
 	}
 
+	episodeToDownload := podcast.Episodes[episodeN-1]
+	log.Printf("Started downloading: '%s' episode %d of %s", episodeToDownload.Title, episodeN, podcast.Name)
+
 	bar := pb.New(podcast.Episodes[episodeN-1].Length).SetUnits(pb.U_BYTES)
 	bar.ShowTimeLeft = true
 	bar.ShowSpeed = true
 	bar.Start()
-	if err := podcast.Episodes[episodeN-1].Download(podcast.Path, bar); err != nil {
+
+	if err := episodeToDownload.Download(podcast.Path, bar); err != nil {
 		log.Fatalf("Could not download episode: %#v", err)
 	}
+
 	bar.Finish()
 }
 

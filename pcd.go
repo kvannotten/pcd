@@ -49,6 +49,7 @@ var (
 	ErrCouldNotDownload      = errors.New("Could not download episode")
 	ErrCouldNotReadFromCache = errors.New("Could not read episodes from cache. Perform a sync and try again.")
 	ErrCouldNotParseContent  = errors.New("Could not parse the content from the feed")
+	ErrFileAlreadyExists     = errors.New("File already exists")
 )
 
 func (p *Podcast) Sync() error {
@@ -167,6 +168,14 @@ func (p *Podcast) String() string {
 // Download downloads an episode in 'path'. The writer argument is optional
 // and will just mirror everything written into it (useful for tracking the speed)
 func (e *Episode) Download(path string, writer io.Writer) error {
+	tokens := strings.Split(e.URL, "/")
+	filename := tokens[len(tokens)-1]
+	fpath := filepath.Join(path, filename)
+
+	if _, err := os.Stat(fpath); !os.IsNotExist(err) {
+		return ErrFileAlreadyExists
+	}
+
 	res, err := http.Get(e.URL)
 	if err != nil {
 		log.Printf("Could not download episode: %#v", err)
@@ -178,10 +187,6 @@ func (e *Episode) Download(path string, writer io.Writer) error {
 		return ErrCouldNotDownload
 	}
 
-	tokens := strings.Split(e.URL, "/")
-	filename := tokens[len(tokens)-1]
-
-	fpath := filepath.Join(path, filename)
 	f, err := os.Create(fpath)
 	if err != nil {
 		log.Printf("Could not create file: %#v", err)
