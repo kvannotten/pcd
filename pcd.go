@@ -49,7 +49,6 @@ var (
 	ErrCouldNotDownload      = errors.New("Could not download episode")
 	ErrCouldNotReadFromCache = errors.New("Could not read episodes from cache. Perform a sync and try again.")
 	ErrCouldNotParseContent  = errors.New("Could not parse the content from the feed")
-	ErrFileAlreadyExists     = errors.New("File already exists")
 )
 
 func (p *Podcast) Sync() error {
@@ -173,7 +172,7 @@ func (e *Episode) Download(path string, writer io.Writer) error {
 	fpath := filepath.Join(path, filename)
 
 	if _, err := os.Stat(fpath); !os.IsNotExist(err) {
-		return ErrFileAlreadyExists
+		return ErrFilesystemError
 	}
 
 	res, err := http.Get(e.URL)

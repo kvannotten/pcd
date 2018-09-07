@@ -236,7 +236,7 @@ func TestInvalidDownload(t *testing.T) {
 	}{
 		{"invalid url", &Episode{URL: "invalid"}, randomPath(t), nil, ErrCouldNotDownload},
 		{"invalid status", &Episode{URL: testServerWithStatusCode(404).URL}, randomPath(t), nil, ErrCouldNotDownload},
-		{"invalid path", &Episode{URL: testServer().URL}, "/root/access", nil, ErrCouldNotDownload},
+		{"invalid path", &Episode{URL: testServer().URL}, "/root/access", nil, ErrFilesystemError},
 	}
 
 	for _, e := range table {
