@@ -11,7 +11,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/kvannotten/pcd/rss"
 	"github.com/pkg/errors"
@@ -33,7 +32,7 @@ type Podcast struct {
 
 type Episode struct {
 	Title  string
-	Date   time.Time
+	Date   string
 	URL    string
 	Length int
 }
@@ -158,7 +157,7 @@ func (p *Podcast) String() string {
 			title = fmt.Sprintf("%s...", episode.Title[0:(titleLength-4)])
 		}
 		formatStr := fmt.Sprintf("%%-4d %%-%ds %%20s\n", tl)
-		sb.WriteString(fmt.Sprintf(formatStr, index+1, title, episode.Date.Format(rss.Layout)))
+		sb.WriteString(fmt.Sprintf(formatStr, index+1, title, episode.Date))
 	}
 
 	return sb.String()
@@ -217,14 +216,10 @@ func parseEpisodes(content io.Reader) ([]Episode, error) {
 	var episodes []Episode
 
 	for _, item := range feed.Channel.Items {
-		t, err := time.Parse(rss.Layout, item.Date.Date)
-		if err != nil {
-			log.Printf("Could not parse episode: %#v", err)
-			continue
-		}
+
 		episode := Episode{
 			Title:  item.Title.Title,
-			Date:   t,
+			Date:   item.Date.Date,
 			URL:    item.Enclosure.URL,
 			Length: item.Enclosure.Length,
 		}

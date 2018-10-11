@@ -9,9 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-	"time"
-
-	"github.com/kvannotten/pcd/rss"
 )
 
 func TestSync(t *testing.T) {
@@ -130,7 +127,7 @@ func TestEpisodes(t *testing.T) {
 }
 
 func TestPodcastString(t *testing.T) {
-	now := time.Now()
+	now := "Thu, 10 Nov 2016 19:41:48 -0700"
 
 	podcast := &Podcast{
 		Name:     "test",
@@ -143,7 +140,7 @@ func TestPodcastString(t *testing.T) {
 	if !strings.Contains(podcast.String(), podcast.Episodes[0].Title) {
 		t.Error("Expected episode title to be in the output")
 	}
-	if !strings.Contains(podcast.String(), now.Format(rss.Layout)) {
+	if !strings.Contains(podcast.String(), podcast.Episodes[0].Date) {
 		t.Error("Expected date to be in the output")
 	}
 
