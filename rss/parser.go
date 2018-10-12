@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"sort"
 	"time"
 )
 
@@ -84,20 +85,22 @@ func Parse(content io.Reader) (*PodcastFeed, error) {
 	return &feed, nil
 }
 
-const Layout string = "Mon, _2 Jan 2006 15:04:05 -0700"
+func stringToDate(d string) time.Time {
+	var t time.Time
+	var err error
+
+	t, err = time.Parse(time.RFC1123, d)
+	if err != nil {
+		t, _ = time.Parse(time.RFC1123Z, d)
+	}
+	return t
+}
 
 func sortFeedByDate(feed *PodcastFeed) {
-	if len(feed.Channel.Items) < 1 {
-		return
-	}
+	sort.Slice(feed.Channel.Items, func(i, j int) bool {
+		d1 := stringToDate(feed.Channel.Items[i].Date.Date)
+		d2 := stringToDate(feed.Channel.Items[j].Date.Date)
 
-	firstDate, _ := time.Parse(Layout, feed.Channel.Items[0].Date.Date)
-	lastDate, _ := time.Parse(Layout, feed.Channel.Items[len(feed.Channel.Items)-1].Date.Date)
-
-	if firstDate.After(lastDate) {
-		// reverse the feed
-		for i, j := 0, len(feed.Channel.Items)-1; i < j; i, j = i+1, j-1 {
-			feed.Channel.Items[i], feed.Channel.Items[j] = feed.Channel.Items[j], feed.Channel.Items[i]
-		}
-	}
+		return d2.After(d1)
+	})
 }
