@@ -131,7 +131,7 @@ func TestPodcastString(t *testing.T) {
 
 	podcast := &Podcast{
 		Name:     "test",
-		Episodes: []Episode{Episode{Title: "foo", Date: now}},
+		Episodes: []Episode{{Title: "foo", Date: now}},
 	}
 
 	if !strings.Contains(podcast.String(), podcast.Name) {
