@@ -8,7 +8,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
+	urlpath "path"
 	"path/filepath"
 	"strings"
 
@@ -166,8 +168,13 @@ func (p *Podcast) String() string {
 // Download downloads an episode in 'path'. The writer argument is optional
 // and will just mirror everything written into it (useful for tracking the speed)
 func (e *Episode) Download(path string, writer io.Writer) error {
-	tokens := strings.Split(e.URL, "/")
-	filename := tokens[len(tokens)-1]
+	u, err := url.Parse(e.URL)
+	if err != nil {
+		log.Printf("Parse episode url failed: %#v", err)
+		return ErrCouldNotDownload
+	}
+
+	filename := urlpath.Base(u.Path)
 	fpath := filepath.Join(path, filename)
 
 	if _, err := os.Stat(fpath); !os.IsNotExist(err) {
