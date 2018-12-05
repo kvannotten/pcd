@@ -216,7 +216,7 @@ func TestDownload(t *testing.T) {
 
 	episode := episodes[0]
 	ts := testServer()
-	episode.URL = ts.URL
+	episode.URL = ts.URL + "/sample.mp3"
 
 	if err := episode.Download(randomPath(t), nil); err != nil {
 		t.Errorf("Expected to be able to download episode, but got: %#v", err)
@@ -232,7 +232,7 @@ func TestInvalidDownload(t *testing.T) {
 		err     error
 	}{
 		{"invalid url", &Episode{URL: "invalid"}, randomPath(t), nil, ErrCouldNotDownload},
-		{"invalid status", &Episode{URL: testServerWithStatusCode(404).URL}, randomPath(t), nil, ErrCouldNotDownload},
+		{"invalid status", &Episode{URL: testServerWithStatusCode(404).URL + "/sample.mp3"}, randomPath(t), nil, ErrCouldNotDownload},
 		{"invalid path", &Episode{URL: testServer().URL}, "/root/access", nil, ErrFilesystemError},
 	}
 

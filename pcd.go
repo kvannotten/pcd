@@ -174,6 +174,10 @@ func (e *Episode) Download(path string, writer io.Writer) error {
 		return ErrCouldNotDownload
 	}
 
+	if u.Path == "" {
+		return ErrFilesystemError
+	}
+
 	filename := urlpath.Base(u.Path)
 	fpath := filepath.Join(path, filename)
 
