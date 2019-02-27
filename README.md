@@ -14,8 +14,8 @@ I wanted to be able to download my favorite podcasts in a simple way, and on the
 
 - You will need to create a configuration file under ~/.config/pcd.yml that has the following options: 
 ```
-  ---
-  podcasts:
+---
+podcasts:
   - id: 1
     name: biggest_problem
     path: /some/path/to/biggest_problem
