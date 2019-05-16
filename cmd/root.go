@@ -36,7 +36,7 @@ var rootCmd = &cobra.Command{
 	Use:   "pcd",
 	Short: "CLI podcatcher (podcast client)",
 	Long: `pcd is a CLI application that allows you to track and download your podcasts.
-Just add the necessary configuration under ~/.config/pcd and you can get started. 
+Just add the necessary configuration under ~/.config/pcd.yml and you can get started.
 Run pcd -h to get full help.`,
 }
 
@@ -55,7 +55,7 @@ func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/pcd)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/pcd.yml)")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -81,6 +81,9 @@ func initConfig() {
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	} else {
+		fmt.Println("No configuration found. Please create one first. Have a look at https://github.com/kvannotten/pcd#usage to see how.")
+		os.Exit(1)
 	}
 }
 
