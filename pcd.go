@@ -51,7 +51,6 @@ type Episode struct {
 	Title  string
 	Date   string
 	URL    string
-	Length int
 }
 
 var (
@@ -247,7 +246,6 @@ func parseEpisodes(content io.Reader) ([]Episode, error) {
 			Title:  item.Title.Title,
 			Date:   item.Date.Date,
 			URL:    item.Enclosure.URL,
-			Length: item.Enclosure.Length,
 		}
 
 		episodes = append(episodes, episode)
