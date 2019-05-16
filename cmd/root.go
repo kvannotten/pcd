@@ -131,7 +131,6 @@ func findByFunc(fn func(podcast *pcd.Podcast) bool) *pcd.Podcast {
                     matchedPodcasts = append(matchedPodcasts, &matchedPodcast)
 		}
 	}
-        log.Print(matchedPodcasts)
         if len(matchedPodcasts) == 1 {
 		return matchedPodcasts[0]
         } else {
