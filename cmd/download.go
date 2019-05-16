@@ -18,6 +18,7 @@ package cmd
 import (
 	"log"
 	"strconv"
+        "net/http"
 
 	"github.com/cheggaaa/pb"
 	"github.com/spf13/cobra"
@@ -71,7 +72,20 @@ func download(cmd *cobra.Command, args []string) {
 	episodeToDownload := podcast.Episodes[episodeN-1]
 	log.Printf("Started downloading: '%s' episode %d of %s", episodeToDownload.Title, episodeN, podcast.Name)
 
-	bar := pb.New(podcast.Episodes[episodeN-1].Length).SetUnits(pb.U_BYTES)
+        // RSS Feeds cannot be trusted to accurately or consistently report the length
+        // of the episode file. Instead, make a request for the header and use the
+        // Content-Length property to get an accurate size.
+         resp, err := http.Head(episodeToDownload.URL)
+         if err != nil {
+             log.Fatalf("Request failed: %s\nError: %#v", episodeToDownload.Title, err)
+         }
+
+         if resp.StatusCode != http.StatusOK {
+             log.Fatalf("Request failed: %s\nError: %#v", episodeToDownload.Title, err)
+         }
+         size, _ := strconv.Atoi(resp.Header.Get("Content-Length"))
+
+	bar := pb.New(size).SetUnits(pb.U_BYTES)
 	bar.ShowTimeLeft = true
 	bar.ShowSpeed = true
 	bar.Start()
