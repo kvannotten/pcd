@@ -21,6 +21,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+        "strings"
 
 	"github.com/kvannotten/pcd"
 	homedir "github.com/mitchellh/go-homedir"
@@ -88,7 +89,7 @@ func findPodcast(idOrName string) (*pcd.Podcast, error) {
 	if err != nil {
 		switch err.(type) {
 		case *strconv.NumError: // try as a name instead
-			return findByName(idOrName), nil
+			return findByNameFragment(idOrName), nil
 		default:
 			log.Print("Could not parse podcast search argument, please use the ID or the name")
 			return nil, err
@@ -107,9 +108,10 @@ func findAll() []pcd.Podcast {
 	return podcasts
 }
 
-func findByName(name string) *pcd.Podcast {
+func findByNameFragment(name string) *pcd.Podcast {
 	return findByFunc(func(podcast *pcd.Podcast) bool {
-		return podcast.Name == name
+		return strings.Contains(
+                    strings.ToLower(podcast.Name), strings.ToLower(name))
 	})
 }
 
@@ -121,12 +123,20 @@ func findByID(id int) *pcd.Podcast {
 
 func findByFunc(fn func(podcast *pcd.Podcast) bool) *pcd.Podcast {
 	podcasts := findAll()
+        var matchedPodcasts = make([]*pcd.Podcast, 0)
 
 	for _, podcast := range podcasts {
 		if fn(&podcast) {
-			return &podcast
+                    matchedPodcast := podcast
+                    matchedPodcasts = append(matchedPodcasts, &matchedPodcast)
 		}
 	}
+        log.Print(matchedPodcasts)
+        if len(matchedPodcasts) == 1 {
+		return matchedPodcasts[0]
+        } else {
+                log.Fatalf("Provided search term matched too many podcasts: %v", matchedPodcasts)
+        }
 
 	return nil
 }
