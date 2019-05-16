@@ -23,6 +23,8 @@ import (
 	"log"
 	"sort"
 	"time"
+        "strings"
+        "strconv"
 )
 
 type PodcastFeed struct {
@@ -74,6 +76,54 @@ type Enclosure struct {
 type PodcastDate struct {
 	XMLName xml.Name `xml:"pubDate"`
 	Date    string   `xml:",chardata"`
+}
+
+/*
+Podcast feeds often use non-integet length values for episodes. When we encounter this
+situation, we need to coerce the value into a usable integer. We accomplish this by
+conforming to the Unmarshaler interface and parsing the relevant xml block ourselves. 
+*/
+func normalizeLength(length string) int {
+    var normalized_length = strings.ToLower(length)
+    normalized_length = strings.ReplaceAll(normalized_length, ",", "")
+    normalized_length = strings.ReplaceAll(normalized_length, " ", "")
+    normalized_length = strings.ReplaceAll(normalized_length, "gb", "000000000")
+    normalized_length = strings.ReplaceAll(normalized_length, "mb", "000000")
+    normalized_length = strings.ReplaceAll(normalized_length, "kb", "000")
+
+    i, err := strconv.Atoi(normalized_length)
+    if err != nil {
+        // handle error
+        log.Print(err)
+    }
+    return i
+}
+
+func (e Enclosure) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+    e.XMLName = start.Name
+
+    for {
+        t, err := d.Token()
+        if err != nil {
+            return err
+        }
+        switch tt := t.(type) {
+        case xml.StartElement:
+            switch tt.Name.Local {
+            case "length":
+                e.Length = normalizeLength(tt.Name.Local)
+            case "type":
+                e.Type = tt.Name.Local
+            case "url":
+                e.URL = tt.Name.Local
+            }
+        log.Print(e)
+        case xml.EndElement:
+            if tt == start.End() {
+                return nil
+            }
+        }
+    }
 }
 
 var (
