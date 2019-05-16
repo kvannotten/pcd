@@ -48,7 +48,7 @@ var listCmd = &cobra.Command{
 				if err := podcast.Load(); err != nil {
 					log.Fatalf("Could not load podcast: %#v", err)
 				}
-				fmt.Printf("\t- %-40s (%d episodes)\n", podcast.Name, len(podcast.Episodes))
+                                fmt.Printf("\t%d - %-40s (%d episodes)\n", podcast.ID, podcast.Name, len(podcast.Episodes))
 			}
 		}
 	},
