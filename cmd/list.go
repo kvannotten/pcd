@@ -43,13 +43,25 @@ var listCmd = &cobra.Command{
 
 			fmt.Print(podcast)
 		} else if len(args) == 0 {
+			all, err := cmd.Flags().GetBool("all")
+			if err != nil {
+				log.Fatalf("Got an error while reading the all flag")
+			}
+
 			fmt.Println("List of podcasts from your configuration:")
 			for _, podcast := range findAll() {
 				if err := podcast.Load(); err != nil {
 					log.Fatalf("Could not load podcast: %#v", err)
 				}
-                                fmt.Printf("\t%d - %-40s (%d episodes)\n", podcast.ID, podcast.Name, len(podcast.Episodes))
+				if !all {
+					fmt.Printf("\t%d - %-40s (%d episodes)\n", podcast.ID, podcast.Name, len(podcast.Episodes))
+				} else {
+					for i, episode := range podcast.Episodes {
+						fmt.Printf("%d;%d;%s\n", podcast.ID, i+1, episode.Title)
+					}
+				}
 			}
+
 		}
 	},
 }
@@ -66,4 +78,5 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// listCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	listCmd.Flags().BoolP("all", "a", false, "List all podcasts")
 }
