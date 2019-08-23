@@ -4,7 +4,7 @@
 
 Downloading and listening to podcasts should be simple. It doesn't require massively complex interfaces that eat all your memory and CPU. 
 
-Pcd is a simple CLI tool that does nothing more than downloading your favorite podcasts. It doesn't run in the background, it doesn't eat all your memory and/or cpu. Everything that needs to be done is your responsability. 
+Pcd is a simple CLI tool that does nothing more than downloading your favorite podcasts. It doesn't run in the background, it doesn't eat all your memory and/or cpu. Everything that needs to be done is your responsibility. 
 
 ## Why?
 
