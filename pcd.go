@@ -48,9 +48,9 @@ type Podcast struct {
 }
 
 type Episode struct {
-	Title  string
-	Date   string
-	URL    string
+	Title string
+	Date  string
+	URL   string
 }
 
 var (
@@ -192,6 +192,12 @@ func (e *Episode) Download(path string, writer io.Writer) error {
 		return ErrFilesystemError
 	}
 
+	// remove the query string from filename
+	q := u.Query()
+	for k := range q {
+		q.Del(k)
+	}
+
 	filename := urlpath.Base(u.Path)
 	fpath := filepath.Join(path, filename)
 
@@ -243,9 +249,9 @@ func parseEpisodes(content io.Reader) ([]Episode, error) {
 	for _, item := range feed.Channel.Items {
 
 		episode := Episode{
-			Title:  item.Title.Title,
-			Date:   item.Date.Date,
-			URL:    item.Enclosure.URL,
+			Title: item.Title.Title,
+			Date:  item.Date.Date,
+			URL:   item.Enclosure.URL,
 		}
 
 		episodes = append(episodes, episode)
