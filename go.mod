@@ -1,5 +1,7 @@
 module github.com/kvannotten/pcd
 
+go 1.15
+
 require (
 	github.com/BurntSushi/toml v0.3.0 // indirect
 	github.com/cheggaaa/pb v1.0.25
