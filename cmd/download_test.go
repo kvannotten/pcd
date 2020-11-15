@@ -29,6 +29,7 @@ func TestEpisodeRangeArgs(t *testing.T) {
 	cases["!25,25-27,!26"] = []int{27}
 	cases["22,12,10-13,!11,!22,!12"] = []int{10, 12, 13, 22}
 	cases["101-106,7,!105,!104"] = []int{7, 101, 102, 103, 106}
+	cases["1-5,!3,4-6"] = []int{1, 2, 4, 5, 6}
 	cases[""] = nil
 
 	for arg, want := range cases {

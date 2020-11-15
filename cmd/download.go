@@ -162,7 +162,8 @@ func parseRangeArg(arg string) ([]int, error) {
 		return []int{n}, nil
 	}
 
-	var results []int
+	// this map helps preventing duplicate
+	unique := make(map[int]bool)
 
 	// extract negative numbers !X
 	negatives := regexp.MustCompile(`!\d+`)
@@ -210,7 +211,7 @@ func parseRangeArg(arg string) ([]int, error) {
 				continue
 			}
 
-			results = append(results, i)
+			unique[i] = true
 		}
 	}
 
@@ -221,7 +222,13 @@ func parseRangeArg(arg string) ([]int, error) {
 			return nil, err
 		}
 
-		results = append(results, i)
+		unique[i] = true
+	}
+
+	// we turn the unique map into the slice of episode numbers
+	var results []int
+	for k, _ := range unique {
+		results = append(results, k)
 	}
 
 	// we sort the result
