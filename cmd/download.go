@@ -16,11 +16,16 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"regexp"
+	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/cheggaaa/pb"
+	"github.com/kvannotten/pcd"
 	"github.com/spf13/cobra"
 )
 
@@ -29,11 +34,37 @@ var downloadCmd = &cobra.Command{
 	Use:     "download <podcast> <episode_id>",
 	Aliases: []string{"d"},
 	Short:   "Downloads an episode of a podcast.",
-	Long: `This command will download an episode of a podcast that you define. The episode number can
-be obtained by running 'pcd ls <podcast>' For example:
+	Long: `
+This command will download one or multiple episode(s) of a podcast that you 
+define. 
+
+The episode number can be obtained by running 'pcd ls <podcast>' 
+
+For example:
+
+To download one episode
 
 pcd ls gnu_open_world
-pcd download gnu_open_world 1`,
+pcd download gnu_open_world 1
+
+To download episode ranges:
+
+pcd download gnu_open_world '20-30,!25'
+
+This will download episode 20 to 30 and skip the 25.
+
+Available formats:
+
+Episode numbers: '1,5,105'
+Ranges: '2-15'
+Skipping: '!102,!121'
+
+Combining those as follow:
+
+pcd download gnu_open_world '1-30,40-47,!15,!17,!20,102'
+
+Make sure to use the single-quote on bash otherwise the !105 will expand your 
+bash history.`,
 	Args: cobra.MinimumNArgs(1),
 	Run:  download,
 }
@@ -51,16 +82,23 @@ func download(cmd *cobra.Command, args []string) {
 		log.Fatalf("Could not load podcast: %#v", err)
 	}
 
-	var episodeN int
-	if len(args) > 1 {
-		episodeN, err = strconv.Atoi(args[1])
-	} else {
-		episodeN = len(podcast.Episodes) // download latest
+	if len(args) < 2 {
+		// download latest
+		downloadEpisode(podcast, len(podcast.Episodes))
+		return
 	}
+
+	episodes, err := parseRangeArg(args[1])
 	if err != nil {
 		log.Fatalf("Could not parse episode number %s: %#v", args[1], err)
 	}
 
+	for _, n := range episodes {
+		downloadEpisode(podcast, n)
+	}
+}
+
+func downloadEpisode(podcast *pcd.Podcast, episodeN int) {
 	if episodeN > len(podcast.Episodes) {
 		log.Fatalf("There's only %d episodes in this podcast.", len(podcast.Episodes))
 	}
@@ -109,4 +147,92 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// downloadCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+// parseRangeArg parses episodes number with the following format
+// 1,2,3-5,!4 returns [1, 2, 3, 5]
+func parseRangeArg(arg string) ([]int, error) {
+	if len(arg) == 0 {
+		return nil, nil
+	}
+
+	// we try to convert the arg as a single episode
+	n, err := strconv.Atoi(arg)
+	if err == nil {
+		return []int{n}, nil
+	}
+
+	// this map helps preventing duplicate
+	unique := make(map[int]bool)
+
+	// extract negative numbers !X
+	negatives := regexp.MustCompile(`!\d+`)
+	notWanted := negatives.FindAllString(arg, -1)
+
+	arg = negatives.ReplaceAllString(arg, "")
+
+	// extract ranges X-Y
+	rangesPattern := regexp.MustCompile(`\d+-\d+`)
+	ranges := rangesPattern.FindAllString(arg, -1)
+
+	arg = rangesPattern.ReplaceAllString(arg, "")
+
+	// extract the remaining single digit X
+	digitsPattern := regexp.MustCompile(`\d+`)
+	digits := digitsPattern.FindAllString(arg, -1)
+
+	for _, r := range ranges {
+		parts := strings.Split(r, "-")
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("range %s must have the format start-end", r)
+		}
+
+		start, err := strconv.Atoi(parts[0])
+		if err != nil {
+			return nil, err
+		}
+
+		end, err := strconv.Atoi(parts[1])
+		if err != nil {
+			return nil, err
+		}
+
+		for i := start; i <= end; i++ {
+			// make sure it's wanted
+			wanted := true
+			for _, nw := range notWanted {
+				if fmt.Sprintf("!%d", i) == nw {
+					wanted = false
+					break
+				}
+			}
+
+			if !wanted {
+				continue
+			}
+
+			unique[i] = true
+		}
+	}
+
+	// let's add the remaining digits
+	for _, d := range digits {
+		i, err := strconv.Atoi(d)
+		if err != nil {
+			return nil, err
+		}
+
+		unique[i] = true
+	}
+
+	// we turn the unique map into the slice of episode numbers
+	var results []int
+	for k, _ := range unique {
+		results = append(results, k)
+	}
+
+	// we sort the result
+	sort.Ints(results)
+
+	return results, nil
 }
