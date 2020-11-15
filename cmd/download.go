@@ -85,6 +85,7 @@ func download(cmd *cobra.Command, args []string) {
 	if len(args) < 2 {
 		// download latest
 		downloadEpisode(podcast, len(podcast.Episodes))
+		return
 	}
 
 	episodes, err := parseRangeArg(args[1])
