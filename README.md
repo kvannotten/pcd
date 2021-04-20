@@ -31,6 +31,10 @@ podcasts:
 - (Optionally) List the episodes of a podcast: `pcd ls 1` or `pcd ls biggest_problem`
 - Download the first episode of `biggest_problem`: `pcd d 1 1` or `pcd d biggest_problem 1`
 
+## Support
+
+Community support can be had via the matrix channel: https://matrix.to/#/#pcd:kristof.tech
+
 ## Contributions
 
 Contributions are welcome, as long as they are in line with the philosophy of keeping it simple and to the point. No features that are out of the scope of this application will be accepted.
