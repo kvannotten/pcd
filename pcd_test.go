@@ -20,6 +20,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -232,6 +233,8 @@ func TestDownload(t *testing.T) {
 	episode := episodes[0]
 	ts := testServer()
 	episode.URL = ts.URL + "/sample.mp3"
+	episode.Title = "some_title"
+	episode.Guid = "some_guid"
 
 	if err := episode.Download(randomPath(t), nil); err != nil {
 		t.Errorf("Expected to be able to download episode, but got: %#v", err)
@@ -299,6 +302,7 @@ func TestParseEpisodes(t *testing.T) {
 func TestGobEncodeAndDecode(t *testing.T) {
 	episode := Episode{
 		Title: "test",
+		Guid:  "guid",
 	}
 
 	content, err := toGOB64([]Episode{episode})
@@ -323,5 +327,23 @@ func TestGobEncodeAndDecode(t *testing.T) {
 	}
 	if episodes[0].Title != episode.Title {
 		t.Errorf("Expected title to be %s, but got %s", episode.Title, episodes[0].Title)
+	}
+}
+
+func TestRepeatableFileName(t *testing.T) {
+	episode := Episode{
+		Title: "This is a cool episode",
+		URL:   "https://some_fake_website.com/episodes/cool.mp3",
+		Guid:  "https://some_fake_website.com/blog/cool",
+	}
+
+	urlData, err := url.Parse(episode.URL)
+
+	if err != nil {
+		t.Errorf("Didn't expect an error, but got: %#v", err)
+	}
+
+	if episode.FileName(urlData) != episode.FileName(urlData) {
+		t.Errorf("file names should be repeatable")
 	}
 }

@@ -213,6 +213,7 @@ func TestParse(t *testing.T) {
 		{"podcast title", feed.Channel.Title.Title, "Title of Podcast"},
 		{"podcast description", feed.Channel.Description.Description, "Description of podcast."},
 		{"title of item", feed.Channel.Items[0].Title.Title, "Title of Podcast Episode"},
+		{"guid of item", feed.Channel.Items[0].Guid.Guid, "http://example.com/podcast-1"},
 	}
 
 	for _, e := range table {
@@ -266,6 +267,7 @@ func TestParseRFC1123Z(t *testing.T) {
 		{"podcast description", feed.Channel.Description.Description, "Description of podcast."},
 		{"title of item", feed.Channel.Items[0].Title.Title, "Title of Podcast Episode"},
 		{"publication date", feed.Channel.Items[0].Date.Date, "Thu, 21 Dec 2016 16:01:07 GMT"},
+		{"guid of item", feed.Channel.Items[0].Guid.Guid, "http://example.com/podcast-1"},
 	}
 
 	for _, e := range table {

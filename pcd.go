@@ -17,6 +17,7 @@ package pcd
 
 import (
 	"bytes"
+	"crypto/sha1"
 	"encoding/base64"
 	"encoding/gob"
 	"fmt"
@@ -27,6 +28,7 @@ import (
 	"os"
 	urlpath "path"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/kvannotten/pcd/rss"
@@ -51,6 +53,7 @@ type Episode struct {
 	Title string
 	Date  string
 	URL   string
+	Guid  string
 }
 
 var (
@@ -64,6 +67,8 @@ var (
 	ErrCouldNotDownload      = errors.New("Could not download episode")
 	ErrCouldNotReadFromCache = errors.New("Could not read episodes from cache. Perform a sync and try again.")
 	ErrCouldNotParseContent  = errors.New("Could not parse the content from the feed")
+
+	EpisodeTitleRegex = regexp.MustCompile(`[^A-Za-z0-9 *]`)
 )
 
 func (p *Podcast) Sync() error {
@@ -198,8 +203,7 @@ func (e *Episode) Download(path string, writer io.Writer) error {
 		q.Del(k)
 	}
 
-	filename := urlpath.Base(u.Path)
-	fpath := filepath.Join(path, filename)
+	fpath := filepath.Join(path, e.FileName(u))
 
 	if _, err := os.Stat(fpath); !os.IsNotExist(err) {
 		return ErrFilesystemError
@@ -238,6 +242,25 @@ func (e *Episode) Download(path string, writer io.Writer) error {
 	return nil
 }
 
+func (e *Episode) FileName(u *url.URL) string {
+	var finalFileName strings.Builder
+
+	title := EpisodeTitleRegex.ReplaceAllString(e.Title, "")
+	title = strings.ReplaceAll(title, " ", "_")
+	finalFileName.WriteString(title)
+	finalFileName.WriteString("__")
+
+	h := sha1.New()
+	h.Write([]byte(e.Guid))
+	guidHash := h.Sum(nil)
+	finalFileName.WriteString(base64.RawURLEncoding.EncodeToString(guidHash))
+	finalFileName.WriteString("__")
+
+	finalFileName.WriteString(urlpath.Base(u.Path))
+
+	return finalFileName.String()
+}
+
 func parseEpisodes(content io.Reader) ([]Episode, error) {
 	feed, err := rss.Parse(content)
 	if err != nil {
@@ -252,6 +275,7 @@ func parseEpisodes(content io.Reader) ([]Episode, error) {
 			Title: item.Title.Title,
 			Date:  item.Date.Date,
 			URL:   item.Enclosure.URL,
+			Guid:  item.Guid.Guid,
 		}
 
 		episodes = append(episodes, episode)
