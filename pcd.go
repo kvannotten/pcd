@@ -239,6 +239,8 @@ func (e *Episode) Download(path string, writer io.Writer) error {
 		return ErrCouldNotDownload
 	}
 
+	log.Printf("Sucessfully Downloaded to: %s", fpath)
+
 	return nil
 }
 
@@ -256,7 +258,7 @@ func (e *Episode) FileName(u *url.URL) string {
 	finalFileName.WriteString(base64.RawURLEncoding.EncodeToString(guidHash))
 	finalFileName.WriteString("__")
 
-	finalFileName.WriteString(urlpath.Base(u.Path))
+	finalFileName.WriteString(strings.ReplaceAll(urlpath.Base(u.Path), " ", "_"))
 
 	return finalFileName.String()
 }
