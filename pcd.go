@@ -27,11 +27,14 @@ import (
 	"os"
 	urlpath "path"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/kvannotten/pcd/rss"
 	"github.com/pkg/errors"
 )
+
+var nonNumAndLetterRegex = regexp.MustCompile(`[^a-zA-Z0-9:_\-@ ]+`)
 
 type Podcast struct {
 	ID   int
@@ -181,7 +184,7 @@ func (p *Podcast) String() string {
 
 // Download downloads an episode in 'path'. The writer argument is optional
 // and will just mirror everything written into it (useful for tracking the speed)
-func (e *Episode) Download(path string, writer io.Writer) error {
+func (e *Episode) Download(path, downloadFilename string, writer io.Writer) error {
 	u, err := url.Parse(e.URL)
 	if err != nil {
 		log.Printf("Parse episode url failed: %#v", err)
@@ -199,6 +202,12 @@ func (e *Episode) Download(path string, writer io.Writer) error {
 	}
 
 	filename := urlpath.Base(u.Path)
+
+	if downloadFilename != "" {
+		parsedDownloadFilename := e.ParseDownloadFilename(downloadFilename, filename)
+		filename = parsedDownloadFilename
+	}
+
 	fpath := filepath.Join(path, filename)
 
 	if _, err := os.Stat(fpath); !os.IsNotExist(err) {
@@ -236,6 +245,23 @@ func (e *Episode) Download(path string, writer io.Writer) error {
 	}
 
 	return nil
+}
+
+func (e *Episode) ParseDownloadFilename(downloadFilename, filename string) string {
+	ext := filepath.Ext(filename)
+
+	filename = strings.Replace(filename, ext, "", 1)
+	variableEvaluator := map[string]string{
+		"{title}":    e.Title,
+		"{date}":     e.Date,
+		"{filename}": filename,
+	}
+
+	for varName, value := range variableEvaluator {
+		downloadFilename = strings.ReplaceAll(downloadFilename, varName, value)
+	}
+
+	return nonNumAndLetterRegex.ReplaceAllString(downloadFilename, "") + ext
 }
 
 func parseEpisodes(content io.Reader) ([]Episode, error) {

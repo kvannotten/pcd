@@ -21,7 +21,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-        "strings"
+	"strings"
 
 	"github.com/kvannotten/pcd"
 	homedir "github.com/mitchellh/go-homedir"
@@ -111,10 +111,20 @@ func findAll() []pcd.Podcast {
 	return podcasts
 }
 
+func getDownloadFilename() string {
+	var downloadFilename string
+
+	if err := viper.UnmarshalKey("download_filename", &downloadFilename); err != nil {
+		log.Fatalf("Could not parse 'podcasts' entry in config: %v", err)
+	}
+
+	return downloadFilename
+}
+
 func findByNameFragment(name string) *pcd.Podcast {
 	return findByFunc(func(podcast *pcd.Podcast) bool {
 		return strings.Contains(
-                    strings.ToLower(podcast.Name), strings.ToLower(name))
+			strings.ToLower(podcast.Name), strings.ToLower(name))
 	})
 }
 
@@ -126,19 +136,19 @@ func findByID(id int) *pcd.Podcast {
 
 func findByFunc(fn func(podcast *pcd.Podcast) bool) *pcd.Podcast {
 	podcasts := findAll()
-        var matchedPodcasts = make([]*pcd.Podcast, 0)
+	var matchedPodcasts = make([]*pcd.Podcast, 0)
 
 	for _, podcast := range podcasts {
 		if fn(&podcast) {
-                    matchedPodcast := podcast
-                    matchedPodcasts = append(matchedPodcasts, &matchedPodcast)
+			matchedPodcast := podcast
+			matchedPodcasts = append(matchedPodcasts, &matchedPodcast)
 		}
 	}
-        if len(matchedPodcasts) == 1 {
+	if len(matchedPodcasts) == 1 {
 		return matchedPodcasts[0]
-        } else {
-                log.Fatalf("Provided search term matched too many podcasts: %v", matchedPodcasts)
-        }
+	} else {
+		log.Fatalf("Provided search term matched too many podcasts: %v", matchedPodcasts)
+	}
 
 	return nil
 }

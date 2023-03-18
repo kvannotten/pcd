@@ -17,6 +17,7 @@ package pcd
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -233,8 +234,53 @@ func TestDownload(t *testing.T) {
 	ts := testServer()
 	episode.URL = ts.URL + "/sample.mp3"
 
-	if err := episode.Download(randomPath(t), nil); err != nil {
+	if err := episode.Download(randomPath(t), "", nil); err != nil {
 		t.Errorf("Expected to be able to download episode, but got: %#v", err)
+	}
+}
+
+func TestDownloadWithDownloadFilenameSet(t *testing.T) {
+	r := strings.NewReader(Podcastfeed)
+	episodes, err := parseEpisodes(r)
+	if err != nil {
+		t.Errorf("Expected no error, but got: %#v", err)
+	}
+
+	episode := episodes[0]
+	ts := testServer()
+	episode.URL = ts.URL + "/sample.mp3"
+
+	path := randomPath(t)
+	downloadFilename := "{title}__{date}__{filename}"
+
+	if err := episode.Download(path, downloadFilename, nil); err != nil {
+		t.Errorf("Expected to be able to download episode, but got: %#v", err)
+	}
+}
+
+func TestParseDownloadFilename(t *testing.T) {
+	episode := Episode{
+		Title: "sometitle",
+		Date:  "somedate",
+	}
+	currentFilename := "helloworld.mp3"
+
+	table := []struct {
+		name string
+		want string
+	}{
+		{"{title}", fmt.Sprintf("%s.mp3", episode.Title)},
+		{"{date}", fmt.Sprintf("%s.mp3", episode.Date)},
+		{"{title}__{date}-cool", fmt.Sprintf("%s__%s-cool.mp3", episode.Title, episode.Date)},
+		{"{filename}-downloaded-via-pcd", fmt.Sprintf("%s-downloaded-via-pcd.mp3", strings.Replace(currentFilename, ".mp3", "", 1))},
+	}
+
+	for _, e := range table {
+		t.Run(e.name, func(t *testing.T) {
+			if result := episode.ParseDownloadFilename(e.name, currentFilename); result != e.want {
+				t.Errorf("got %s, want %s", result, e.want)
+			}
+		})
 	}
 }
 
@@ -253,7 +299,7 @@ func TestInvalidDownload(t *testing.T) {
 
 	for _, e := range table {
 		t.Run(e.name, func(t *testing.T) {
-			if err := e.episode.Download(e.path, nil); err != e.err {
+			if err := e.episode.Download(e.path, "", nil); err != e.err {
 				t.Errorf("Expected %#v, but got %#v", e.err, err)
 			}
 		})

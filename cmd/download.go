@@ -128,7 +128,8 @@ func downloadEpisode(podcast *pcd.Podcast, episodeN int) {
 	bar.ShowSpeed = true
 	bar.Start()
 
-	if err := episodeToDownload.Download(podcast.Path, bar); err != nil {
+	downloadFilename := getDownloadFilename()
+	if err := episodeToDownload.Download(podcast.Path, downloadFilename, bar); err != nil {
 		log.Fatalf("Could not download episode: %#v", err)
 	}
 
