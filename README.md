@@ -15,7 +15,11 @@ I wanted to be able to download my favorite podcasts in a simple way, and on the
 - You will need to create a configuration file under ~/.config/pcd.yml that has the following options: 
 ```
 ---
-download_filename: "{title}__cool-podcast" # optional, supports variables {title}, {date}. {filename} all of which are derived from episode data 
+# optional, supports variables {title}, {date}. {filename} all of which are derived from episode data 
+download_filename: "{title}__cool-podcast" 
+# optional, command runs once an episode has been downloaded,
+# I use this to encode downloaded episodes in theory you can use this functionality for other purposes. 
+post_download_command: 'ffmpeg -y -i {input_file} -b:a 192k -ac 1 -ar 44100 {output_file}' 
 podcasts:
   - id: 1
     name: biggest_problem
@@ -32,11 +36,3 @@ podcasts:
 - (Optionally) List the episodes of a podcast: `pcd ls 1` or `pcd ls biggest_problem`
 - Download the first episode of `biggest_problem`: `pcd d 1 1` or `pcd d biggest_problem 1`
 - Download the latest episode from each podcast `pcd dl`
-
-## Support
-
-Community support can be had via the matrix channel: https://matrix.to/#/#pcd:kristof.tech
-
-## Contributions
-
-Contributions are welcome, as long as they are in line with the philosophy of keeping it simple and to the point. No features that are out of the scope of this application will be accepted.

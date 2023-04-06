@@ -21,15 +21,18 @@ import (
 	"encoding/gob"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	urlpath "path"
 	"path/filepath"
 	"regexp"
 	"strings"
 
+	"github.com/cheggaaa/pb"
 	"github.com/kvannotten/pcd/rss"
 	"github.com/pkg/errors"
 )
@@ -184,7 +187,8 @@ func (p *Podcast) String() string {
 
 // Download downloads an episode in 'path'. The writer argument is optional
 // and will just mirror everything written into it (useful for tracking the speed)
-func (e *Episode) Download(path, downloadFilename string, writer io.Writer) error {
+func (e *Episode) Download(path, downloadFilename, postDownloadCommand string, bar *pb.ProgressBar) error {
+	bar.Start()
 	u, err := url.Parse(e.URL)
 	if err != nil {
 		log.Printf("Parse episode url failed: %#v", err)
@@ -234,14 +238,25 @@ func (e *Episode) Download(path, downloadFilename string, writer io.Writer) erro
 
 	var mw io.Writer
 
-	if writer != nil {
-		mw = io.MultiWriter(f, writer)
+	if bar != nil {
+		mw = io.MultiWriter(f, bar)
 	} else {
 		mw = f
 	}
 	if _, err := io.Copy(mw, res.Body); err != nil {
+		os.Remove(f.Name())
 		log.Printf("Could not write to file: %#v", err)
 		return ErrCouldNotDownload
+	}
+
+	bar.Finish()
+
+	if postDownloadCommand != "" {
+		if err := e.RunPostDownloadCommand(f, postDownloadCommand); err != nil {
+			os.Remove(f.Name())
+			return fmt.Errorf("post download command failed: %v", err)
+		}
+
 	}
 
 	return nil
@@ -262,6 +277,45 @@ func (e *Episode) ParseDownloadFilename(downloadFilename, filename string) strin
 	}
 
 	return nonNumAndLetterRegex.ReplaceAllString(downloadFilename, "") + ext
+}
+
+func (e *Episode) RunPostDownloadCommand(downloadedFile *os.File, postDownloadCommand string) error {
+	file, err := ioutil.TempFile(os.TempDir(), "pcd")
+	if err != nil {
+		return err
+	}
+
+	if _, err := downloadedFile.Seek(0, 0); err != nil {
+		return err
+	}
+
+	defer os.Remove(file.Name())
+	if _, err = io.Copy(file, downloadedFile); err != nil {
+		return err
+	}
+
+	commandSlice := strings.Split(postDownloadCommand, " ")
+	variableEvaluator := map[string]string{
+		"{input_file}":  file.Name(),
+		"{output_file}": downloadedFile.Name(),
+	}
+
+	for i, _ := range commandSlice {
+		for varName, val := range variableEvaluator {
+			commandSlice[i] = strings.ReplaceAll(commandSlice[i], varName, val)
+		}
+	}
+
+	log.Println("running post download command", commandSlice)
+	cmd := exec.Command(commandSlice[0], commandSlice[1:]...)
+	stdoutStderr, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("post download command failed: %s", string(stdoutStderr))
+	}
+
+	log.Println("post download command success", string(stdoutStderr))
+
+	return nil
 }
 
 func parseEpisodes(content io.Reader) ([]Episode, error) {
