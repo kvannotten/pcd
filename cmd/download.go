@@ -84,7 +84,9 @@ func download(cmd *cobra.Command, args []string) {
 
 	if len(args) < 2 {
 		// download latest
-		downloadEpisode(podcast, len(podcast.Episodes))
+		if err := downloadEpisode(podcast, len(podcast.Episodes)); err != nil {
+			log.Fatal(err)
+		}
 		return
 	}
 
@@ -94,17 +96,19 @@ func download(cmd *cobra.Command, args []string) {
 	}
 
 	for _, n := range episodes {
-		downloadEpisode(podcast, n)
+		if err := downloadEpisode(podcast, n); err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
-func downloadEpisode(podcast *pcd.Podcast, episodeN int) {
+func downloadEpisode(podcast *pcd.Podcast, episodeN int) error {
 	if episodeN > len(podcast.Episodes) {
-		log.Fatalf("There's only %d episodes in this podcast.", len(podcast.Episodes))
+		return fmt.Errorf("There's only %d episodes in this podcast.", len(podcast.Episodes))
 	}
 
 	if episodeN < 1 {
-		log.Fatalf("A number from 1 to %d is required.", len(podcast.Episodes))
+		return fmt.Errorf("A number from 1 to %d is required.", len(podcast.Episodes))
 	}
 
 	episodeToDownload := podcast.Episodes[episodeN-1]
@@ -115,11 +119,11 @@ func downloadEpisode(podcast *pcd.Podcast, episodeN int) {
 	// Content-Length property to get an accurate size.
 	resp, err := http.Head(episodeToDownload.URL)
 	if err != nil {
-		log.Fatalf("Request failed: %s\nError: %#v", episodeToDownload.Title, err)
+		return fmt.Errorf("Request failed: %s\nError: %#v", episodeToDownload.Title, err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		log.Fatalf("Request failed: %s\nError: %#v", episodeToDownload.Title, err)
+		return fmt.Errorf("Request failed: %s\nError: %#v", episodeToDownload.Title, err)
 	}
 	size, _ := strconv.Atoi(resp.Header.Get("Content-Length"))
 
@@ -130,10 +134,13 @@ func downloadEpisode(podcast *pcd.Podcast, episodeN int) {
 
 	downloadFilename := getDownloadFilename()
 	if err := episodeToDownload.Download(podcast.Path, downloadFilename, bar); err != nil {
-		log.Fatalf("Could not download episode: %#v", err)
+		bar.Finish()
+		return fmt.Errorf("Could not download episode: %#v", err)
 	}
 
 	bar.Finish()
+
+	return nil
 }
 
 func init() {

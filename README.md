@@ -31,6 +31,7 @@ podcasts:
 - You have to "sync" the feeds: `pcd sync`
 - (Optionally) List the episodes of a podcast: `pcd ls 1` or `pcd ls biggest_problem`
 - Download the first episode of `biggest_problem`: `pcd d 1 1` or `pcd d biggest_problem 1`
+- Download the latest episode from each podcast `pcd dl`
 
 ## Support
 
