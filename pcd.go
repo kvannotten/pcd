@@ -17,6 +17,7 @@ package pcd
 
 import (
 	"bytes"
+	"crypto/sha1"
 	"encoding/base64"
 	"encoding/gob"
 	"fmt"
@@ -57,6 +58,7 @@ type Episode struct {
 	Title string
 	Date  string
 	URL   string
+	Guid  string
 }
 
 var (
@@ -266,10 +268,21 @@ func (e *Episode) ParseDownloadFilename(downloadFilename, filename string) strin
 	ext := filepath.Ext(filename)
 
 	filename = strings.Replace(filename, ext, "", 1)
+	hasher := sha1.New()
+	hasher.Write([]byte(e.Title))
+	hasher.Write([]byte(e.Guid))
+	hasher.Write([]byte(filename))
+
+	hash := hasher.Sum(nil)
+
+	encodedHash := base64.RawURLEncoding.EncodeToString(hash)
+
 	variableEvaluator := map[string]string{
 		"{title}":    e.Title,
 		"{date}":     e.Date,
+		"{guid}":     e.Guid,
 		"{filename}": filename,
+		"{hash}":     encodedHash,
 	}
 
 	for varName, value := range variableEvaluator {
@@ -332,6 +345,7 @@ func parseEpisodes(content io.Reader) ([]Episode, error) {
 			Title: item.Title.Title,
 			Date:  item.Date.Date,
 			URL:   item.Enclosure.URL,
+			Guid:  item.Guid.Guid,
 		}
 
 		episodes = append(episodes, episode)

@@ -15,7 +15,7 @@ I wanted to be able to download my favorite podcasts in a simple way, and on the
 - You will need to create a configuration file under ~/.config/pcd.yml that has the following options: 
 ```
 ---
-# optional, supports variables {title}, {date}. {filename} all of which are derived from episode data 
+# optional, supports variables {title}, {date}. {filename}, {guid}, {hash} all of which are derived from episode data 
 download_filename: "{title}__cool-podcast" 
 # optional, command runs once an episode has been downloaded,
 # I use this to encode downloaded episodes in theory you can use this functionality for other purposes. 

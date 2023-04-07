@@ -52,6 +52,12 @@ type Item struct {
 	Enclosure  Enclosure
 	Downloaded bool
 	Date       PodcastDate
+	Guid       Guid
+}
+
+type Guid struct {
+	XMLName xml.Name `xml:"guid"`
+	Guid    string   `xml:",chardata"`
 }
 
 type ItemTitle struct {
