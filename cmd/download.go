@@ -130,10 +130,10 @@ func downloadEpisode(podcast *pcd.Podcast, episodeN int) error {
 	bar := pb.New(size).SetUnits(pb.U_BYTES)
 	bar.ShowTimeLeft = true
 	bar.ShowSpeed = true
-	bar.Start()
 
 	downloadFilename := getDownloadFilename()
-	if err := episodeToDownload.Download(podcast.Path, downloadFilename, bar); err != nil {
+	postDownloadCommand := getPostDownloadCommand()
+	if err := episodeToDownload.Download(podcast.Path, downloadFilename, postDownloadCommand, bar); err != nil {
 		bar.Finish()
 		return fmt.Errorf("Could not download episode: %#v", err)
 	}

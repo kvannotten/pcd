@@ -115,10 +115,20 @@ func getDownloadFilename() string {
 	var downloadFilename string
 
 	if err := viper.UnmarshalKey("download_filename", &downloadFilename); err != nil {
-		log.Fatalf("Could not parse 'podcasts' entry in config: %v", err)
+		log.Fatalf("Could not parse 'download_filename' entry in config: %v", err)
 	}
 
 	return downloadFilename
+}
+
+func getPostDownloadCommand() string {
+	var postDownloadCommand string
+
+	if err := viper.UnmarshalKey("post_download_command", &postDownloadCommand); err != nil {
+		log.Fatalf("Could not parse 'post_download_command' entry in config: %v", err)
+	}
+
+	return postDownloadCommand
 }
 
 func findByNameFragment(name string) *pcd.Podcast {
