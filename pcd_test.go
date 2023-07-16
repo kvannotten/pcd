@@ -257,6 +257,8 @@ func TestFilenameTemplateDownload(t *testing.T) {
 	}{
 		{"filenameTest", &episode, "{{ .name }}", ts.URL + "/randomFile.mp3", "randomFile.mp3"},
 		{"titleExtension", &Episode{Title: "Fooman"}, "{{ .title }}{{ .ext }}", ts.URL + "/randomFile.mp3", "Fooman.mp3"},
+		{"Invalid Title", &Episode{Title: "this/is/a&amp;test/&#34"}, "{{ .title }}{{ .ext }}", ts.URL + "/randomFile.mp3", "this_is_a_amp_test__#34.mp3"},
+		{"Sugar title", &Episode{Title: "What is sugar? 'Added' sugar? 'Natural' sugar?"}, "{{ .title }}{{ .ext }}", ts.URL + "/podcast.mp3", "What is sugar? 'Added' sugar? 'Natural' sugar?.mp3"},
 	}
 
 	for _, e := range table {
@@ -265,6 +267,10 @@ func TestFilenameTemplateDownload(t *testing.T) {
 			str := parseFilenameTemplate(e.fileNameTemplate, e.episode, parsedTitle)
 			if str != e.expectedTitle {
 				t.Errorf("Expected title to be %s, but got %s", e.expectedTitle, str)
+			}
+			e.episode.URL = e.episodeURL
+			if err := e.episode.Download(randomPath(t), nil, e.fileNameTemplate); err != nil {
+				t.Errorf("Expected to be able to download episode, but got: %#v", err)
 			}
 		})
 	}

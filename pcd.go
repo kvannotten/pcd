@@ -31,6 +31,7 @@ import (
 	"os"
 	urlpath "path"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -265,6 +266,8 @@ func parseEpisodes(content io.Reader) ([]Episode, error) {
 	return episodes, nil
 }
 
+var reservedChars = regexp.MustCompile(`[\\/<>|:&%*;]`)
+
 func parseFilenameTemplate(filenameTemplate string, episode *Episode, parsedTitle string) string {
 	if filenameTemplate == "" {
 		filenameTemplate = "{{ .name }}"
@@ -275,17 +278,17 @@ func parseFilenameTemplate(filenameTemplate string, episode *Episode, parsedTitl
 	err := templ.Execute(&b, map[string]interface{}{
 		"name":         parsedTitle,
 		"date":         episode.Date,
-		"title":        episode.Title,
+		"title":        template.HTML(episode.Title),
 		"current_date": time.Now().Format("20060102150405"),
 		"rand":         rand.String(8),
 		"ext":          urlpath.Ext(parsedTitle),
 		"episode_id":   episode.ID,
 	})
 	if err != nil {
-		return ""
+		return "podcast_episode"
 	}
 
-	return b.String()
+	return reservedChars.ReplaceAllString(b.String(), "_")
 }
 
 func toGOB64(episodes []Episode) (io.Reader, error) {
