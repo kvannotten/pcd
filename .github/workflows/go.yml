@@ -20,11 +20,14 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: '1.20'
+        
+    - name: Install build dependencies
+      run: |
+        go get github.com/mitchellh/gox@latest
+        go install github.com/mitchellh/gox@latest
 
     - name: Build
-      run: |
-        go install github.com/mitchellh/gox
-        gox -os="linux darwin windows" -arch="amd64" -ldflags "-s" -verbose ./...
+      run: gox -os="linux darwin windows" -arch="amd64" -ldflags "-s" -verbose ./...
 
     - name: Test
       run: go test -v ./...
