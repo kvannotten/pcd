@@ -20,6 +20,7 @@ podcasts:
     name: biggest_problem
     path: /some/path/to/biggest_problem
     feed: http://feeds.feedburner.com/TheBiggestProblemInTheUniverse
+    filenameTemplate: "{{ .rand }}_{{ .title }}{{ .ext }}"
   - id: 2
     name: some_other
     path: /your/podcast/path/to/some_other
@@ -30,6 +31,20 @@ podcasts:
 - You have to "sync" the feeds: `pcd sync`
 - (Optionally) List the episodes of a podcast: `pcd ls 1` or `pcd ls biggest_problem`
 - Download the first episode of `biggest_problem`: `pcd d 1 1` or `pcd d biggest_problem 1`
+
+### Filename template
+
+The `filenameTemplate` configuration entry is a per podcast configuration that allows you to
+customize the name of the file. You can add static strings to be shared by all files. Furthermore
+the following variables are pushed into the template for your usage:
+* `title`: the title of the podcast episode (provided by podcast)
+* `name`: the filename parsed from the url (this usually includes the extension)
+* `date`: the date provided by the podcast, note that this is unparsed and provided as is. Podcasts use very different formats so there is no uniformity here.
+* `current_date`: the current date (when you download it)
+* `rand`: a string of 8 random characters
+* `ext`: the extension (including the prefix dot)
+
+The `filenameTemplate` is optional. It will default to: `{{ .name }}`
 
 ## Support
 

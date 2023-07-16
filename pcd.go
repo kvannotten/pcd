@@ -20,6 +20,10 @@ import (
 	"encoding/base64"
 	"encoding/gob"
 	"fmt"
+	"github.com/kvannotten/pcd/rand"
+	"github.com/kvannotten/pcd/rss"
+	"github.com/pkg/errors"
+	"html/template"
 	"io"
 	"log"
 	"net/http"
@@ -28,16 +32,15 @@ import (
 	urlpath "path"
 	"path/filepath"
 	"strings"
-
-	"github.com/kvannotten/pcd/rss"
-	"github.com/pkg/errors"
+	"time"
 )
 
 type Podcast struct {
-	ID   int
-	Name string
-	Feed string
-	Path string
+	ID               int
+	Name             string
+	Feed             string
+	Path             string
+	FilenameTemplate string
 
 	// Login data if there's authentication involved
 	Username string
@@ -181,7 +184,7 @@ func (p *Podcast) String() string {
 
 // Download downloads an episode in 'path'. The writer argument is optional
 // and will just mirror everything written into it (useful for tracking the speed)
-func (e *Episode) Download(path string, writer io.Writer) error {
+func (e *Episode) Download(path string, writer io.Writer, filenameTemplate string) error {
 	u, err := url.Parse(e.URL)
 	if err != nil {
 		log.Printf("Parse episode url failed: %#v", err)
@@ -198,7 +201,7 @@ func (e *Episode) Download(path string, writer io.Writer) error {
 		q.Del(k)
 	}
 
-	filename := urlpath.Base(u.Path)
+	filename := parseFilenameTemplate(filenameTemplate, e, urlpath.Base(u.Path))
 	fpath := filepath.Join(path, filename)
 
 	if _, err := os.Stat(fpath); !os.IsNotExist(err) {
@@ -258,6 +261,28 @@ func parseEpisodes(content io.Reader) ([]Episode, error) {
 	}
 
 	return episodes, nil
+}
+
+func parseFilenameTemplate(filenameTemplate string, episode *Episode, parsedTitle string) string {
+	if filenameTemplate == "" {
+		filenameTemplate = "{{ .name }}"
+	}
+
+	templ := template.Must(template.New("filename").Parse(filenameTemplate))
+	b := bytes.Buffer{}
+	err := templ.Execute(&b, map[string]interface{}{
+		"name":         parsedTitle,
+		"date":         episode.Date,
+		"title":        episode.Title,
+		"current_date": time.Now().Format("20060102150405"),
+		"rand":         rand.String(8),
+		"ext":          urlpath.Ext(parsedTitle),
+	})
+	if err != nil {
+		return ""
+	}
+
+	return b.String()
 }
 
 func toGOB64(episodes []Episode) (io.Reader, error) {

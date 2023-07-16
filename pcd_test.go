@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	urlpath "path"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -233,8 +234,39 @@ func TestDownload(t *testing.T) {
 	ts := testServer()
 	episode.URL = ts.URL + "/sample.mp3"
 
-	if err := episode.Download(randomPath(t), nil); err != nil {
+	if err := episode.Download(randomPath(t), nil, ""); err != nil {
 		t.Errorf("Expected to be able to download episode, but got: %#v", err)
+	}
+}
+
+func TestFilenameTemplateDownload(t *testing.T) {
+	r := strings.NewReader(Podcastfeed)
+	episodes, err := parseEpisodes(r)
+	if err != nil {
+		t.Errorf("Expected no error, but got: %#v", err)
+	}
+
+	episode := episodes[0]
+	ts := testServer()
+	table := []struct {
+		name             string
+		episode          *Episode
+		fileNameTemplate string
+		episodeURL       string
+		expectedTitle    string
+	}{
+		{"filenameTest", &episode, "{{ .name }}", ts.URL + "/randomFile.mp3", "randomFile.mp3"},
+		{"titleExtension", &Episode{Title: "Fooman"}, "{{ .title }}{{ .ext }}", ts.URL + "/randomFile.mp3", "Fooman.mp3"},
+	}
+
+	for _, e := range table {
+		t.Run(e.name, func(t *testing.T) {
+			parsedTitle := urlpath.Base(e.episodeURL)
+			str := parseFilenameTemplate(e.fileNameTemplate, e.episode, parsedTitle)
+			if str != e.expectedTitle {
+				t.Errorf("Expected title to be %s, but got %s", e.expectedTitle, str)
+			}
+		})
 	}
 }
 
@@ -253,7 +285,7 @@ func TestInvalidDownload(t *testing.T) {
 
 	for _, e := range table {
 		t.Run(e.name, func(t *testing.T) {
-			if err := e.episode.Download(e.path, nil); err != e.err {
+			if err := e.episode.Download(e.path, nil, ""); err != e.err {
 				t.Errorf("Expected %#v, but got %#v", e.err, err)
 			}
 		})

@@ -128,7 +128,7 @@ func downloadEpisode(podcast *pcd.Podcast, episodeN int) {
 	bar.ShowSpeed = true
 	bar.Start()
 
-	if err := episodeToDownload.Download(podcast.Path, bar); err != nil {
+	if err := episodeToDownload.Download(podcast.Path, bar, podcast.FilenameTemplate); err != nil {
 		log.Fatalf("Could not download episode: %#v", err)
 	}
 
@@ -227,7 +227,7 @@ func parseRangeArg(arg string) ([]int, error) {
 
 	// we turn the unique map into the slice of episode numbers
 	var results []int
-	for k, _ := range unique {
+	for k := range unique {
 		results = append(results, k)
 	}
 
