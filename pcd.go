@@ -51,6 +51,7 @@ type Podcast struct {
 }
 
 type Episode struct {
+	ID    int
 	Title string
 	Date  string
 	URL   string
@@ -249,9 +250,10 @@ func parseEpisodes(content io.Reader) ([]Episode, error) {
 
 	var episodes []Episode
 
-	for _, item := range feed.Channel.Items {
+	for i, item := range feed.Channel.Items {
 
 		episode := Episode{
+			ID:    i + 1,
 			Title: item.Title.Title,
 			Date:  item.Date.Date,
 			URL:   item.Enclosure.URL,
@@ -277,6 +279,7 @@ func parseFilenameTemplate(filenameTemplate string, episode *Episode, parsedTitl
 		"current_date": time.Now().Format("20060102150405"),
 		"rand":         rand.String(8),
 		"ext":          urlpath.Ext(parsedTitle),
+		"episode_id":   episode.ID,
 	})
 	if err != nil {
 		return ""

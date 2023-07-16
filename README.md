@@ -43,6 +43,7 @@ the following variables are pushed into the template for your usage:
 * `current_date`: the current date (when you download it)
 * `rand`: a string of 8 random characters
 * `ext`: the extension (including the prefix dot)
+* `episode_id`: the relative, generated id of the episode. Please note that this is not necessarily idempotent. It depends on the management of the RSS feed.
 
 The `filenameTemplate` is optional. It will default to: `{{ .name }}`
 
