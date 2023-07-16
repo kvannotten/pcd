@@ -1,4 +1,4 @@
-# pcd [![Build Status](https://travis-ci.org/kvannotten/pcd.svg?branch=master)](https://travis-ci.org/kvannotten/pcd)
+# pcd [![Go](https://github.com/kvannotten/pcd/actions/workflows/go.yml/badge.svg)](https://github.com/kvannotten/pcd/actions/workflows/go.yml)
 
 ## Philosophy
 
