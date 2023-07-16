@@ -23,7 +23,7 @@ jobs:
 
     - name: Build
       run: |
-        go get github.com/mitchellh/gox
+        go install github.com/mitchellh/gox
         gox -os="linux darwin windows" -arch="amd64" -ldflags "-s" -verbose ./...
 
     - name: Test
