@@ -10,6 +10,26 @@ Pcd is a simple CLI tool that does nothing more than downloading your favorite p
 
 I wanted to be able to download my favorite podcasts in a simple way, and on the CLI. I stumbled upon a few utilities like `marrie`. It inspired me to make a version that doesn't need all those annoying python dependencies. Also I wanted to be able to access podcasts that are behind some http authentication method.
 
+## Installation
+
+### Package managers
+
+Pcd is available on the Arch User Repository (AUR). Use your favorite AUR helper (yay, paru, etc.) to install pcd.
+
+### Binary releases
+
+You can download the latest prebuilt binary from the [releases tab](https://github.com/kvannotten/pcd/releases).
+
+### Building from source
+
+Make sure you have the latest Go compiler installed. You can do so on Arch Linux-based systems using `sudo pacman -S go`.
+```
+git clone https://github.com/kvannotten/pcd
+cd pcd
+go build -o pcd cmd/pcd/main.go
+sudo mv -f pcd /usr/local/bin
+```
+
 ## Usage
 
 - You will need to create a configuration file under ~/.config/pcd.yml that has the following options: 
