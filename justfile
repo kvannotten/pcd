@@ -7,8 +7,8 @@ default:
 
 # Builds pcd binary
 build:
-    go build -o pcd cmd/pcd/main.go
+    go build -o pcd -ldflags "-s" cmd/pcd/main.go
 
 # Run the tests
 test:
-    go test -v ./...
+    go test -v -race ./...
